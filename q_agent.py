@@ -2,6 +2,7 @@ import cv2
 from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
+import time
 
 
 class QAgent(Agent):
@@ -31,6 +32,7 @@ class QAgent(Agent):
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
         # self.total_reward += self.move(action)
+        time.sleep(2)
 
     def sense(self, grid):
         """ Constructs the next state from sensory signals.

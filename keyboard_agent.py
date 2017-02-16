@@ -29,7 +29,7 @@ class KeyboardAgent(Agent):
         # You can get the set of possible actions and print it with:
         # print [Action.toString(a) for a in self.getActionsSet()]
 
-        key = cv2.waitKey(300)
+        key = cv2.waitKey(400) #300 for normal play, 5000 for step by step
         action = Action.NOOP
         if chr(key & 255) == 'a':
             action = Action.LEFT
@@ -53,6 +53,7 @@ class KeyboardAgent(Agent):
         grid -- 2-dimensional numpy array containing the latest grid
                 representation of the environment
         """
+        print grid
         # Visualise the environment grid
         cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
 
