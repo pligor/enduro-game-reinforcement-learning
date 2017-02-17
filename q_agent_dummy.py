@@ -5,7 +5,6 @@ from enduro.state import EnvironmentState
 import time
 import numpy as np
 
-from sense import Sense
 
 class QAgent(Agent):
     def init(self):

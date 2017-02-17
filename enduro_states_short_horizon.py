@@ -1,5 +1,6 @@
 import numpy as np
-
+from road_category import RoadCategory
+from extreme_position import ExtremePosition
 
 # for k, v in np.sctypeDict.iteritems(): print '{0:14s} : {1:40s}'.format(str(k), v)
 # exit()
@@ -18,8 +19,8 @@ class Category:
         self.value = value
 
 
-road_categ = np.array(['turn_left', "turn_right", "straight_ahead"])
-pos_categ = np.array(['far_left', "far_right", "elsewhere"])
+road_categ = np.array(RoadCategory().getAll())
+pos_categ = np.array(ExtremePosition().getAll())
 one_car_ahead_approaching = np.array([False, True])
 one_car_ahead_right_approaching = np.array([False, True])
 one_car_ahead_left_approaching = np.array([False, True])
