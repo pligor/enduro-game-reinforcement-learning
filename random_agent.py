@@ -47,7 +47,12 @@ class RandomAgent(Agent):
         # Do not use plain integers between 0 - 3 as it will not work
 
         self.total_reward += self.move(action)
-        #time.sleep(1)
+        time.sleep(1)
+
+    def isLeft(self, grid):
+        row = grid[0, :]
+        half_ind = int(len(row)/2)
+        return np.all(row[:half_ind] != 2)
 
     def sense(self, grid):
         """ Constructs the next state from sensory signals.
@@ -55,6 +60,8 @@ class RandomAgent(Agent):
         grid -- 2-dimensional numpy array containing the latest grid
                 representation of the environment
         """
+        print grid[0, :]
+        print self.isLeft(grid)
         # Visualise the environment grid
         cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
 
@@ -82,7 +89,7 @@ if __name__ == "__main__":
     rng = np.random.RandomState(seed=seed)
     agent = RandomAgent(rng=rng)
     #agent.run(True, episodes=2, draw=True)
-    size = 3
+    size = 1
     totalRewards = -1000 * np.ones(size, dtype=np.int) #minus zero to show that this is something invalid
 
     for i in range(size):
