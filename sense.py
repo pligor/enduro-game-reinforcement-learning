@@ -74,7 +74,7 @@ class Sense:
         print prevPos, newPos
         return prevPos > newPos and action != Action.RIGHT
 
-    def isOpponentInFront(self, grid, shift = 0):
+    def isOpponentInFront(self, grid, shift=0):
         ourCarPos = np.argwhere(grid[0] == 2)
 
         for i in range(len(ourCarPos.shape)):
@@ -82,7 +82,7 @@ class Sense:
 
         opponentPositions = np.argwhere(grid[1] == 1)
 
-        camPos = np.min( (np.max((0, ourCarPos + shift)), self.gridWidth -1) )
+        camPos = np.min((np.max((0, ourCarPos + shift)), self.gridWidth - 1))
 
         return camPos in opponentPositions.flatten()
 
@@ -125,7 +125,7 @@ class Sense:
         for i in range(len(ourCarPos.shape)):
             ourCarPos = ourCarPos[0]
 
-        camPos = np.max( (0, np.min( (self.gridWidth - 1, ourCarPos - 1) ) )  )
+        camPos = np.max((0, np.min((self.gridWidth - 1, ourCarPos - 1))))
 
         return self.isOpponentInFront(newGrid, shift=-1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
 
@@ -152,16 +152,84 @@ class Sense:
         ourCarPos = self.getOurCarPos(grid)
 
         interestingPos = ourCarPos + (1 if left else -1)
-        interestingPos = np.max( (0, np.min( (self.gridWidth - 1,  interestingPos) ) ) )
+        interestingPos = np.max((0, np.min((self.gridWidth - 1, interestingPos))))
 
         return grid[0, interestingPos] == 1
 
+    def checkOpponentsInFront(self, grid, coords, breadth=3):
+        """coords are (line, column)"""
+        assert breadth % 2 == 1
+        line, column = coords
+        assert line >= 0 and line < self.gridLength
+        assert column >= 0 and column < self.gridWidth
+
+        limit = int(np.floor(breadth / 2))
+
+        inds = np.unique(self.makeIndicesValid(
+            np.arange(-limit, limit + 1) + column
+        ))
+
+        return np.any( grid[line + 1, inds] == 1 )
+
+
+    def doesOpponentSurpasses(self, prevGrid, newGrid, curLine = 0):
+        # opponent surpasses from line 0 to next line
+        # in prev grid line 0 is full and line 1 is empty and line 2 is empty
+        # and
+        # in next grid, line 0 is empty and (line 1 is full or line 2 is full)
+
+        lineOpponents = np.argwhere(prevGrid[curLine] == 1).flatten()
+        #print lineOpponents
+
+        emptyInFront = []
+        for i in lineOpponents:
+            emptyInFront.append(
+                (not sense.checkOpponentsInFront(prevGrid, (curLine, i))) and
+                (not sense.checkOpponentsInFront(prevGrid, (curLine + 1, i)))
+            )
+
+        emptyInFront = np.array(emptyInFront)
+
+        # print emptyInFront
+
+        noOpponentsWherePreviouslyWere = np.all(newGrid[curLine, lineOpponents] != 1)
+
+        fullInFront = []
+        for i in lineOpponents:
+            fullInFront.append(
+                sense.checkOpponentsInFront(newGrid, (curLine, i)) or sense.checkOpponentsInFront(newGrid,
+                                                                                                  (curLine + 1, i))
+            )
+
+        fullInFront = np.array(fullInFront)
+
+        # print fullInFront
+        assert len(fullInFront) == len(emptyInFront)
+        fullAndEmptyChecks = False if len(fullInFront) == 0 else np.any(fullInFront & emptyInFront)
+
+        #print type(noOpponentsWherePreviouslyWere)
+        #print type(np.any(fullInFront & emptyInFront))
+
+        return fullAndEmptyChecks and noOpponentsWherePreviouslyWere
 
 if __name__ == "__main__":
     seed = 16011984
     rng = np.random  # .RandomState(seed=seed)
     # sense = Sense(rng=rng)
     sense = Sense(rng=rng)
+
+    def testDoesOpponentSurpasses():
+        prevGrid = sense.generateEmptyGrid()
+        newGrid = prevGrid.copy()
+        ourCarPos = sense.getOurCarPos(prevGrid)
+        opponentPos = np.max((0, ourCarPos - 1))
+        prevGrid[0, opponentPos] = 2 if opponentPos == ourCarPos else 1
+
+        print prevGrid
+        print
+        print newGrid
+
+        sense.doesOpponentSurpasses(prevGrid, newGrid)
 
     def testIsOpponentApproaching():
         prevGrid = sense.generateEmptyGrid()
@@ -216,6 +284,3 @@ if __name__ == "__main__":
         print prevGrid
         print sense.isRoadTurningLeft(prevGrid, Action.BREAK, newGrid)
         print newGrid
-
-
-    testIsOpponentInFront()
