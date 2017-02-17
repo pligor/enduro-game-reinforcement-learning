@@ -19,12 +19,12 @@ class Category:
         self.name = name
         self.value = value
 
-
 road_categ = np.array(RoadCategory().getAll())
 pos_categ = np.array(ExtremePosition().getAll())
 one_car_ahead_approaching = np.array([False, True])
 one_car_ahead_right_approaching = np.array([False, True])
 one_car_ahead_left_approaching = np.array([False, True])
+three_cars_one_step_back_approaching = np.array([False, True])
 opponents_surpassing = np.array([False, True])
 opponent_immediate_left = np.array([False, True])
 opponent_immediate_right = np.array([False, True])
@@ -38,6 +38,7 @@ categories = np.array([
     Category('1carAhead', one_car_ahead_approaching),
     Category('1carAheadRight', one_car_ahead_right_approaching),
     Category('1carAheadLeft', one_car_ahead_left_approaching),
+    Category('3cars', three_cars_one_step_back_approaching),
     Category('surpassing', opponents_surpassing),
     Category('oppLeft', opponent_immediate_left),
     Category('oppRight', opponent_immediate_right),
@@ -51,6 +52,7 @@ tuple_dt = np.dtype([
     ('1carAhead', np.bool),
     ('1carAheadRight', np.bool),
     ('1carAheadLeft', np.bool),
+    ('3cars', np.bool),
     ('surpassing', np.bool),
     ('oppLeft', np.bool),
     ('oppRight', np.bool),
@@ -58,7 +60,7 @@ tuple_dt = np.dtype([
 
 tupleList = []
 
-getInitialTuple = lambda: np.array(("", "", False, False, False, False, False, False), dtype=tuple_dt)
+getInitialTuple = lambda: np.array(("", "", False, False, False, False, False, False, False), dtype=tuple_dt)
 
 
 # tuple = getInitialTuple()
@@ -92,6 +94,7 @@ tuples = np.array([(i, tuple) for i, tuple in enumerate(tupleList)], dtype=tuple
 
 # clean the surpassing ones
 toDelete = np.array([(
+                         (x['surpassing'] == True and x['3cars'] == True) or
                          (x['surpassing'] == True and x['1carAheadLeft'] == True) or
                          (x['surpassing'] == True and x['1carAheadRight'] == True) or
                          (x['surpassing'] == True and x['1carAhead'] == True)
