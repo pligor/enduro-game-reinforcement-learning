@@ -88,7 +88,7 @@ class Sense:
         inds = np.max([inds, np.zeros(length)], axis=0)
         return np.min([inds, np.repeat(self.gridWidth - 1, length)], axis=0).astype(np.int)
 
-    def isOpponentApproaching(self, cameraPos, prevGrid, newGrid):
+    def isOpponentApproaching_old(self, cameraPos, prevGrid, newGrid):
         """camera position is where we place the camera (which column) to look for an approaching opponent from there
         camera is always in front of our car, the first line (not the zero-th)"""
         if newGrid[1, cameraPos] == 1:
@@ -107,13 +107,30 @@ class Sense:
         else:
             return False
 
+    def isOpponentApproaching(self, cameraPos, prevGrid, newGrid):
+        """camera position is where we place the camera (which column) to look for an approaching opponent from there
+        camera is always in front of our car, the first line (not the zero-th)"""
+
+        isOpponentFoundVeryFarAtPrevGrid = self.checkOpponentsInFront(prevGrid, (3, cameraPos), breadth=7)
+        isOpponentFoundFarAtPrevGrid = self.checkOpponentsInFront(prevGrid, (2, cameraPos), breadth=5)
+
+        isOpponentFoundNearAtNewGrid = self.checkOpponentsInFront(newGrid, (1, cameraPos), breadth=3)
+        #isOpponentFoundFarAtNewGrid = self.checkOpponentsInFront(newGrid, (2, cameraPos), breadth=5)
+
+        #print (isOpponentFoundVeryFarAtPrevGrid, isOpponentFoundVeryFarAtPrevGrid, isOpponentFoundNearAtNewGrid)
+
+        return (isOpponentFoundVeryFarAtPrevGrid and isOpponentFoundNearAtNewGrid) or (
+            isOpponentFoundFarAtPrevGrid and isOpponentFoundNearAtNewGrid
+        )
+
     def oneCarInFrontApproaching(self, prevGrid, newGrid):
         ourCarPos = np.argwhere(newGrid[0] == 2)
 
         for i in range(len(ourCarPos.shape)):
             ourCarPos = ourCarPos[0]
 
-        return self.isOpponentInFront(newGrid) and self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
+        #return self.isOpponentInFront(newGrid) and self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
+        return self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
 
     def oneCarInFrontLeftApproaching(self, prevGrid, newGrid):
         ourCarPos = np.argwhere(newGrid[0] == 2)
@@ -122,7 +139,8 @@ class Sense:
 
         camPos = np.max((0, np.min((self.gridWidth - 1, ourCarPos - 1))))
 
-        return self.isOpponentInFront(newGrid, shift=-1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
+        #return self.isOpponentInFront(newGrid, shift=-1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
+        return self.isOpponentApproaching(camPos, prevGrid, newGrid)
 
     def oneCarInFrontRightApproaching(self, prevGrid, newGrid):
         ourCarPos = np.argwhere(newGrid[0] == 2)
@@ -131,7 +149,8 @@ class Sense:
 
         camPos = np.max((0, np.min((self.gridWidth - 1, ourCarPos + 1))))
 
-        return self.isOpponentInFront(newGrid, shift=1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
+        #return self.isOpponentInFront(newGrid, shift=1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
+        return self.isOpponentApproaching(camPos, prevGrid, newGrid)
 
     @staticmethod
     def getOurCarPos(grid):
