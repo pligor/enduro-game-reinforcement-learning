@@ -7,6 +7,19 @@ import numpy as np
 from enduro_data_types import tuple_dt
 
 class AgentWithShortOrizonSenses(Agent):
+    def __init__(self, rng):
+        super(AgentWithShortOrizonSenses, self).__init__()
+        # Add member variables to your class here
+
+        self.rng = rng
+
+        self.sensor = Sense(rng)
+
+        self.states = np.load('enduro_states_short_horizon.npy')
+
+    def getStateIds(self):
+        return [s['id'] for s in self.states]
+
     def getStateIdBySensing(self, prevGrid, action, newGrid):
         allSenses = self.getAllSenses(prevGrid, action, newGrid)
         # a = allSenses.copy()
@@ -44,17 +57,7 @@ class AgentWithShortOrizonSenses(Agent):
 
         return allSenses
 
-    def getStateById(self, id):
-        ss = [s for s in self.states if s['id'] == id]
+    def getStateById(self, stateId):
+        ss = [s for s in self.states if s['id'] == stateId]
         assert len(ss) == 1
         return ss[0]
-
-    def __init__(self, rng):
-        super(AgentWithShortOrizonSenses, self).__init__()
-        # Add member variables to your class here
-
-        self.rng = rng
-
-        self.sensor = Sense(rng)
-
-        self.states = np.load('enduro_states_short_horizon.npy')
