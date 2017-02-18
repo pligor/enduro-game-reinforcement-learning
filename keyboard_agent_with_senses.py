@@ -1,6 +1,6 @@
-#import sys
+# import sys
 
-#sys.path.append('/usr/local/lib/python2.7/site-packages')
+# sys.path.append('/usr/local/lib/python2.7/site-packages')
 
 import cv2
 from enduro.agent import Agent
@@ -8,22 +8,46 @@ from enduro.action import Action
 from enduro.state import EnvironmentState
 from sense import Sense
 import numpy as np
+from enduro_data_types import tuple_dt
+
 
 class KeyboardAgent(Agent):
-    def getStateBySensing(self, prevGrid, action, newGrid):
+    def getStateIdBySensing(self, prevGrid, action, newGrid):
+        allSenses = self.getAllSenses(prevGrid, action, newGrid)
+        # a = allSenses.copy()
+        # a['road'] = "333"
+        # print a == allSenses
+
+        stateIds = [s['id'] for s in self.states if s['tuple'] == allSenses]
+
+        assert len(stateIds) == 1
+        stateId = stateIds[0]
+
+        print stateId
+        return stateId
+
+    def getAllSenses(self, prevGrid, action, newGrid):
         roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
         extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
         isCarInFrontApproaching = self.sensor.oneCarInFrontApproaching(prevGrid, newGrid)
         isCarInFrontRightApproaching = self.sensor.oneCarInFrontRightApproaching(prevGrid, newGrid)
         isCarInFrontLeftApproaching = self.sensor.oneCarInFrontLeftApproaching(prevGrid, newGrid)
         areOpponentsSurpassing = self.sensor.doesOpponentSurpasses(prevGrid, newGrid)
-        isOpponentAtImmediateRight = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=True)
         isOpponentAtImmediateLeft = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=False)
+        isOpponentAtImmediateRight = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=True)
 
-        print "areOpponentsSurpassing"
-        print areOpponentsSurpassing
+        allSenses = np.array((roadCateg,
+                              extremePos,
+                              isCarInFrontApproaching,
+                              isCarInFrontRightApproaching,
+                              isCarInFrontLeftApproaching,
+                              areOpponentsSurpassing,
+                              isOpponentAtImmediateLeft,
+                              isOpponentAtImmediateRight), dtype=tuple_dt)
 
-        return
+        print allSenses
+
+        return allSenses
 
     def getStateById(self, id):
         ss = [s for s in self.states if s['id'] == id]
@@ -49,10 +73,9 @@ class KeyboardAgent(Agent):
         self.total_reward = 0
 
         self.prevGrid = None
+        self.curAction = None
 
         print "enduro_states_short_horizon: %d" % len(self.states)
-
-        print self.getStateById(10)
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -62,7 +85,7 @@ class KeyboardAgent(Agent):
         # You can get the set of possible actions and print it with:
         # print [Action.toString(a) for a in self.getActionsSet()]
 
-        key = cv2.waitKey(1000) #300 for normal play, 5000 for step by step
+        key = cv2.waitKey(400)  # 400 for normal play, 5000 for step by step
         action = Action.NOOP
         if chr(key & 255) == 'a':
             action = Action.LEFT
@@ -90,7 +113,7 @@ class KeyboardAgent(Agent):
         """
 
         if self.prevGrid is not None:
-            self.getStateBySensing(self.prevGrid, self.curAction, grid)
+            self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
 
         print grid
         # Visualise the environment grid
@@ -111,11 +134,12 @@ class KeyboardAgent(Agent):
         # Show the latest game frame
         cv2.imshow("Enduro", self._image)
 
+
 if __name__ == "__main__":
     seed = 16011984
     rng = np.random  # .RandomState(seed=seed)
 
     a = KeyboardAgent(rng)
 
-    a.run(False, episodes=2, draw=True)
+    a.run(False, episodes=1, draw=True)
     print 'Total reward: ' + str(a.total_reward)

@@ -2,6 +2,7 @@ import os
 import numpy as np
 from road_category import RoadCategory
 from extreme_position import ExtremePosition
+from enduro_data_types import tuple_dt
 
 # for k, v in np.sctypeDict.iteritems(): print '{0:14s} : {1:40s}'.format(str(k), v)
 # exit()
@@ -45,16 +46,7 @@ categories = np.array([
 
 # print categories
 
-tuple_dt = np.dtype([
-    ('road', np.str, np.max([len(x) for x in road_categ])),
-    ('pos', np.str, np.max([len(x) for x in pos_categ])),
-    ('1carAhead', np.bool),
-    ('1carAheadRight', np.bool),
-    ('1carAheadLeft', np.bool),
-    ('surpassing', np.bool),
-    ('oppLeft', np.bool),
-    ('oppRight', np.bool),
-])
+
 
 tupleList = []
 
