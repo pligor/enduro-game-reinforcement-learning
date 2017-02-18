@@ -12,8 +12,11 @@ import numpy as np
 class KeyboardAgent(Agent):
     def getStateBySensing(self, prevGrid, action, newGrid):
         roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
+        extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
+        isCarInFrontApproaching = self.sensor.oneCarInFrontApproaching(prevGrid, newGrid)
 
-        print roadCateg
+        print "isCarInFrontApproaching"
+        print isCarInFrontApproaching
 
         return
 
@@ -27,7 +30,7 @@ class KeyboardAgent(Agent):
         # Add member variables to your class here
         self.total_reward = 0
         self.prevGrid = None
-        self.sensor = None
+        self.sensor = Sense(rng)
         self.rng = rng
         self.curAction = None
 
@@ -41,8 +44,6 @@ class KeyboardAgent(Agent):
         self.total_reward = 0
 
         self.prevGrid = None
-
-        self.sensor = Sense(self.rng)
 
         print "enduro_states_short_horizon: %d" % len(self.states)
 
