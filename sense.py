@@ -39,7 +39,7 @@ class Sense:
             return ExtremePosition().elsewhere
 
     def getRoadCateg(self, prevGrid, action, newGrid):
-        #print Action.toString(action)
+        # print Action.toString(action)
         if self.isRoadTurningLeft(prevGrid, action, newGrid):
             return RoadCategory().turn_left
         elif self.isRoadTurningRight(prevGrid, action, newGrid):
@@ -115,9 +115,9 @@ class Sense:
         isOpponentFoundFarAtPrevGrid = self.checkOpponentsInFront(prevGrid, (2, cameraPos), breadth=5)
 
         isOpponentFoundNearAtNewGrid = self.checkOpponentsInFront(newGrid, (1, cameraPos), breadth=3)
-        #isOpponentFoundFarAtNewGrid = self.checkOpponentsInFront(newGrid, (2, cameraPos), breadth=5)
+        # isOpponentFoundFarAtNewGrid = self.checkOpponentsInFront(newGrid, (2, cameraPos), breadth=5)
 
-        #print (isOpponentFoundVeryFarAtPrevGrid, isOpponentFoundVeryFarAtPrevGrid, isOpponentFoundNearAtNewGrid)
+        # print (isOpponentFoundVeryFarAtPrevGrid, isOpponentFoundVeryFarAtPrevGrid, isOpponentFoundNearAtNewGrid)
 
         return (isOpponentFoundVeryFarAtPrevGrid and isOpponentFoundNearAtNewGrid) or (
             isOpponentFoundFarAtPrevGrid and isOpponentFoundNearAtNewGrid
@@ -129,7 +129,7 @@ class Sense:
         for i in range(len(ourCarPos.shape)):
             ourCarPos = ourCarPos[0]
 
-        #return self.isOpponentInFront(newGrid) and self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
+        # return self.isOpponentInFront(newGrid) and self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
         return self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
 
     def oneCarInFrontLeftApproaching(self, prevGrid, newGrid):
@@ -139,7 +139,7 @@ class Sense:
 
         camPos = np.max((0, np.min((self.gridWidth - 1, ourCarPos - 1))))
 
-        #return self.isOpponentInFront(newGrid, shift=-1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
+        # return self.isOpponentInFront(newGrid, shift=-1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
         return self.isOpponentApproaching(camPos, prevGrid, newGrid)
 
     def oneCarInFrontRightApproaching(self, prevGrid, newGrid):
@@ -149,7 +149,7 @@ class Sense:
 
         camPos = np.max((0, np.min((self.gridWidth - 1, ourCarPos + 1))))
 
-        #return self.isOpponentInFront(newGrid, shift=1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
+        # return self.isOpponentInFront(newGrid, shift=1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
         return self.isOpponentApproaching(camPos, prevGrid, newGrid)
 
     @staticmethod
@@ -164,10 +164,11 @@ class Sense:
     def isOpponentAtImmediate(self, grid, right_boolean):
         ourCarPos = self.getOurCarPos(grid)
 
-        interestingPos = ourCarPos + (1 if right_boolean else -1)
-        interestingPos = np.max((0, np.min((self.gridWidth - 1, interestingPos))))
+        interestingPos = lambda shift: np.max((0, np.min((self.gridWidth - 1,
+                                                          ourCarPos + (shift if right_boolean else -shift)
+                                                          ))))
 
-        return grid[0, interestingPos] == 1
+        return grid[0, interestingPos(1)] == 1 or grid[0, interestingPos(2)] == 1
 
     def checkOpponentsInFront(self, grid, coords, breadth=3):
         """coords are (line, column)"""
@@ -182,17 +183,16 @@ class Sense:
             np.arange(-limit, limit + 1) + column
         ))
 
-        return np.any( grid[line + 1, inds] == 1 )
+        return np.any(grid[line + 1, inds] == 1)
 
-
-    def doesOpponentSurpasses(self, prevGrid, newGrid, curLine = 0):
+    def doesOpponentSurpasses(self, prevGrid, newGrid, curLine=0):
         # opponent surpasses from line 0 to next line
         # in prev grid line 0 is full and line 1 is empty and line 2 is empty
         # and
         # in next grid, line 0 is empty and (line 1 is full or line 2 is full)
 
         lineOpponents = np.argwhere(prevGrid[curLine] == 1).flatten()
-        #print lineOpponents
+        # print lineOpponents
 
         emptyInFront = []
         for i in lineOpponents:
@@ -220,16 +220,18 @@ class Sense:
         assert len(fullInFront) == len(emptyInFront)
         fullAndEmptyChecks = False if len(fullInFront) == 0 else np.any(fullInFront & emptyInFront)
 
-        #print type(noOpponentsWherePreviouslyWere)
-        #print type(np.any(fullInFront & emptyInFront))
+        # print type(noOpponentsWherePreviouslyWere)
+        # print type(np.any(fullInFront & emptyInFront))
 
         return fullAndEmptyChecks and noOpponentsWherePreviouslyWere
+
 
 if __name__ == "__main__":
     seed = 16011984
     rng = np.random  # .RandomState(seed=seed)
     # sense = Sense(rng=rng)
     sense = Sense(rng=rng)
+
 
     def testDoesOpponentSurpasses():
         prevGrid = sense.generateEmptyGrid()
@@ -243,6 +245,7 @@ if __name__ == "__main__":
         print newGrid
 
         sense.doesOpponentSurpasses(prevGrid, newGrid)
+
 
     def testIsOpponentApproaching():
         prevGrid = sense.generateEmptyGrid()

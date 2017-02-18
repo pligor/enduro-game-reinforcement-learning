@@ -14,9 +14,13 @@ class KeyboardAgent(Agent):
         roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
         extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
         isCarInFrontApproaching = self.sensor.oneCarInFrontApproaching(prevGrid, newGrid)
+        isCarInFrontRightApproaching = self.sensor.oneCarInFrontRightApproaching(prevGrid, newGrid)
+        isCarInFrontLeftApproaching = self.sensor.oneCarInFrontLeftApproaching(prevGrid, newGrid)
 
-        print "isCarInFrontApproaching"
-        print isCarInFrontApproaching
+        isOpponentAtImmediateRight = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=True)
+        isOpponentAtImmediateLeft = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=False)
+
+        print (isOpponentAtImmediateLeft, isOpponentAtImmediateRight)
 
         return
 
