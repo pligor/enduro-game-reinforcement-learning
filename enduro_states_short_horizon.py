@@ -83,22 +83,13 @@ tuples_dt = np.dtype([
 tuples = np.array([(i, tuple) for i, tuple in enumerate(tupleList)], dtype=tuples_dt)
 
 # clean the surpassing ones
-toDelete = np.array([(
-                         (x['surpassing'] == True and x['1carAheadLeft'] == True) or
-                         (x['surpassing'] == True and x['1carAheadRight'] == True) or
-                         (x['surpassing'] == True and x['1carAhead'] == True)
-                     ) for x in [t['tuple'] for t in tuples]])
-
-# print toDelete
-
-# for t in tuples:
-# np.argwhere( )
-
-# print len(tuples)
-# print tuples
-
-states = tuples[toDelete == False]
-# print len(toDelete[toDelete==True])
+# toDelete = np.array([(
+#                          (x['surpassing'] == True and x['1carAheadLeft'] == True) or
+#                          (x['surpassing'] == True and x['1carAheadRight'] == True) or
+#                          (x['surpassing'] == True and x['1carAhead'] == True)
+#                      ) for x in [t['tuple'] for t in tuples]])
+#states = tuples[toDelete == False]
+states = tuples[:]
 
 print len(states)
 print states[0]
