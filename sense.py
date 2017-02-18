@@ -31,48 +31,44 @@ class Sense:
         for i in range(len(pos.shape)):
             pos = pos[0]
 
-        if pos == 0:
-            return ExtremePosition().far_right
-        elif pos == (self.gridWidth - 1):
+        if pos == 1:
             return ExtremePosition().far_left
+        elif pos == (self.gridWidth - 2):
+            return ExtremePosition().far_right
         else:
             return ExtremePosition().elsewhere
 
     def getRoadCateg(self, prevGrid, action, newGrid):
+        #print Action.toString(action)
         if self.isRoadTurningLeft(prevGrid, action, newGrid):
             return RoadCategory().turn_left
         elif self.isRoadTurningRight(prevGrid, action, newGrid):
             return RoadCategory().turn_right
         else:
-            return RoadCategory.straight_ahead
+            return RoadCategory().straight_ahead
 
     @staticmethod
     def isRoadTurningRight(prevGrid, action, newGrid):
         prevPos = np.argwhere(prevGrid[0] == 2)
         newPos = np.argwhere(newGrid[0] == 2)
-
         assert prevPos.shape == newPos.shape
-
         for i in range(len(prevPos.shape)):
             prevPos = prevPos[0]
             newPos = newPos[0]
 
-        print prevPos, newPos
-        return prevPos < newPos and action != Action.LEFT
+        return (prevPos > newPos and action != Action.LEFT)
 
     @staticmethod
     def isRoadTurningLeft(prevGrid, action, newGrid):
         prevPos = np.argwhere(prevGrid[0] == 2)
         newPos = np.argwhere(newGrid[0] == 2)
-
         assert prevPos.shape == newPos.shape
-
         for i in range(len(prevPos.shape)):
             prevPos = prevPos[0]
             newPos = newPos[0]
 
-        print prevPos, newPos
-        return prevPos > newPos and action != Action.RIGHT
+        # return (prevPos < newPos and action != Action.LEFT) or (prevPos == newPos and action == Action.RIGHT)
+        return (prevPos < newPos and action != Action.RIGHT)
 
     def isOpponentInFront(self, grid, shift=0):
         ourCarPos = np.argwhere(grid[0] == 2)
