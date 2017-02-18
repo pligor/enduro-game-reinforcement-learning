@@ -197,8 +197,8 @@ class Sense:
         emptyInFront = []
         for i in lineOpponents:
             emptyInFront.append(
-                (not sense.checkOpponentsInFront(prevGrid, (curLine, i))) and
-                (not sense.checkOpponentsInFront(prevGrid, (curLine + 1, i)))
+                (not self.checkOpponentsInFront(prevGrid, (curLine, i))) and
+                (not self.checkOpponentsInFront(prevGrid, (curLine + 1, i)))
             )
 
         emptyInFront = np.array(emptyInFront)
@@ -210,7 +210,7 @@ class Sense:
         fullInFront = []
         for i in lineOpponents:
             fullInFront.append(
-                sense.checkOpponentsInFront(newGrid, (curLine, i)) or sense.checkOpponentsInFront(newGrid,
+                self.checkOpponentsInFront(newGrid, (curLine, i)) or self.checkOpponentsInFront(newGrid,
                                                                                                   (curLine + 1, i))
             )
 

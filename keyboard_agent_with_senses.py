@@ -16,11 +16,12 @@ class KeyboardAgent(Agent):
         isCarInFrontApproaching = self.sensor.oneCarInFrontApproaching(prevGrid, newGrid)
         isCarInFrontRightApproaching = self.sensor.oneCarInFrontRightApproaching(prevGrid, newGrid)
         isCarInFrontLeftApproaching = self.sensor.oneCarInFrontLeftApproaching(prevGrid, newGrid)
-
+        areOpponentsSurpassing = self.sensor.doesOpponentSurpasses(prevGrid, newGrid)
         isOpponentAtImmediateRight = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=True)
         isOpponentAtImmediateLeft = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=False)
 
-        print (isOpponentAtImmediateLeft, isOpponentAtImmediateRight)
+        print "areOpponentsSurpassing"
+        print areOpponentsSurpassing
 
         return
 
