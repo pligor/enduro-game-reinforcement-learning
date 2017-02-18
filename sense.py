@@ -115,9 +115,8 @@ class Sense:
 
         return self.isOpponentInFront(newGrid) and self.isOpponentApproaching(ourCarPos, prevGrid, newGrid)
 
-    def oneCarInFrontRightApproaching(self, prevGrid, newGrid):
+    def oneCarInFrontLeftApproaching(self, prevGrid, newGrid):
         ourCarPos = np.argwhere(newGrid[0] == 2)
-
         for i in range(len(ourCarPos.shape)):
             ourCarPos = ourCarPos[0]
 
@@ -125,9 +124,8 @@ class Sense:
 
         return self.isOpponentInFront(newGrid, shift=-1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
 
-    def oneCarInFrontLeftApproaching(self, prevGrid, newGrid):
+    def oneCarInFrontRightApproaching(self, prevGrid, newGrid):
         ourCarPos = np.argwhere(newGrid[0] == 2)
-
         for i in range(len(ourCarPos.shape)):
             ourCarPos = ourCarPos[0]
 
@@ -144,10 +142,10 @@ class Sense:
 
         return ourCarPos
 
-    def isOpponentAtImmediate(self, grid, left):
+    def isOpponentAtImmediate(self, grid, right_boolean):
         ourCarPos = self.getOurCarPos(grid)
 
-        interestingPos = ourCarPos + (1 if left else -1)
+        interestingPos = ourCarPos + (1 if right_boolean else -1)
         interestingPos = np.max((0, np.min((self.gridWidth - 1, interestingPos))))
 
         return grid[0, interestingPos] == 1
