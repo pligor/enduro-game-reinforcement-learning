@@ -6,8 +6,9 @@ from enduro.state import EnvironmentState
 import time
 import numpy as np
 from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
+from store_reward_agent import StoreRewardAgent
 
-class QAgent(AgentWithShortOrizonSenses):
+class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
     def getActionsSet(self):
         """including the noop action in our possible actions"""
         return super(QAgent, self).getActionsSet() + [Action.NOOP]
@@ -55,7 +56,7 @@ class QAgent(AgentWithShortOrizonSenses):
         self.cur_t = 1
 
         self.curAction = None
-        self.prevGrid = None
+        self.prevGrid = grid
         self.curReward = None
         self.nextStateId = None
 
@@ -98,10 +99,7 @@ class QAgent(AgentWithShortOrizonSenses):
                 representation of the environment
         """
 
-        if self.prevGrid is None:
-            self.nextStateId = self.curStateId
-        else:
-            self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
+        self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
 
         print "next state id: %d" % self.nextStateId
 
