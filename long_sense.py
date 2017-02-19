@@ -19,7 +19,6 @@ class LongSense(Sense):
         else:
             return str(count)
 
-
 if __name__ == "__main__":
     seed = 16011984
     rng = np.random  # .RandomState(seed=seed)

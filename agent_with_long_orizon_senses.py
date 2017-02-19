@@ -2,16 +2,16 @@ import cv2
 from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
-from sense import Sense
+from long_sense import LongSense
 import numpy as np
-from enduro_data_types import tuple_dt
+from enduro_data_types import long_tuple_dt
 from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
 
 class AgentWithLongOrizonSenses(AgentWithShortOrizonSenses):
     def __init__(self, rng):
         super(AgentWithLongOrizonSenses, self).__init__(rng)
         # Add member variables to your class here
-        self.sensor = Sense(rng)
+        self.sensor = LongSense(rng)
         self.states = np.load('enduro_states_long_horizon.npy')
 
     def getAllSenses(self, prevGrid, action, newGrid):
@@ -23,6 +23,8 @@ class AgentWithLongOrizonSenses(AgentWithShortOrizonSenses):
         areOpponentsSurpassing = self.sensor.doesOpponentSurpasses(prevGrid, newGrid)
         isOpponentAtImmediateLeft = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=False)
         isOpponentAtImmediateRight = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=True)
+        countOpponentsRight = self.sensor.countOpponents(newGrid, left_boolean=False)
+        countOpponentsLeft = self.sensor.countOpponents(newGrid, left_boolean=True)
 
         allSenses = np.array((roadCateg,
                               extremePos,
@@ -31,13 +33,8 @@ class AgentWithLongOrizonSenses(AgentWithShortOrizonSenses):
                               isCarInFrontLeftApproaching,
                               areOpponentsSurpassing,
                               isOpponentAtImmediateLeft,
-                              isOpponentAtImmediateRight), dtype=tuple_dt)
-
-        #print allSenses
+                              isOpponentAtImmediateRight,
+                              countOpponentsRight,
+                              countOpponentsLeft), dtype=long_tuple_dt)
 
         return allSenses
-
-    def getStateById(self, stateId):
-        ss = [s for s in self.states if s['id'] == stateId]
-        assert len(ss) == 1
-        return ss[0]

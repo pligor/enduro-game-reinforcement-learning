@@ -5,9 +5,10 @@ from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
 from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
+from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from store_reward_agent import StoreRewardAgent
 
-class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
+class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
     def __init__(self, rng):
         super(QAgent, self).__init__(rng)
         self.rng = rng
@@ -185,9 +186,11 @@ if __name__ == "__main__":
     agent.run(True, episodes=100, draw=True)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
+    print totalRewards
 
     isAnyOfTheBaseClassesShortOrizon = np.any([("ShortOrizon".lower() in b.__name__.lower()) for b in QAgent.__bases__])
     filename = "qagent_" + ("short" if isAnyOfTheBaseClassesShortOrizon else "long") + "_orizon_data"
-    np.savez(filename, totalRewards, rewardStreams)
+    print filename
+    #np.savez(filename, totalRewards, rewardStreams)
 
-    print totalRewards
+
