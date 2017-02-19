@@ -17,6 +17,7 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
 
         self.gamma = 0.9
         self.computationalTemperature = 10
+        self.epsilon = 0.1
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
@@ -34,7 +35,6 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         self.nextStateId = None
         self.episodeCounter = 0
 
-        # TODO either set the e greedy policy to something else or give initial value functions
         # self.bellmanQ = np.zeros(Qshape)
         # here we are giving something larger than zero
         self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
@@ -92,15 +92,22 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
             np.argmax(self.getQbyS(stateId))
         ]
 
-    def softmaxActionSelection(self, stateId):
-        Qs = self.getQbyS(stateId)
-        exps = np.exp(Qs) / self.computationalTemperature
-        summ = np.sum(exps)
-        probs = exps / summ
+    def softmaxActionSelection(self, stateId, epsilon = 0.):
+        assert 0. <= epsilon <= 1.
+        epsilon = float(epsilon)
 
-        return self.actionById[
-            np.argmax(probs)
-        ]
+        if self.rng.rand() < epsilon:
+            return self.getRandomAction()
+        else:
+            Qs = self.getQbyS(stateId)
+            exps = np.exp(Qs) / self.computationalTemperature
+            summ = np.sum(exps)
+            probs = exps / summ
+
+            return self.actionById[np.argmax(probs)]
+
+    def getRandomAction(self):
+        return self.actionById[self.rng.randint(0, len(self.getActionsSet()))]
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -111,10 +118,7 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
 
-        # time.sleep(1)  # seconds
-        cv2.waitKey(40)
-
-        self.curAction = self.softmaxActionSelection(self.curStateId)
+        self.curAction = self.softmaxActionSelection(self.curStateId, self.epsilon)
 
         self.curReward = self.move(self.curAction)
 
@@ -159,11 +163,12 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
-        if iteration % 10 == 0:
+        if iteration % 100 == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
             print
+        #cv2.waitKey(40)
 
         # Show the game frame only if not learning
         if not learn:
@@ -177,8 +182,9 @@ if __name__ == "__main__":
 
     agent = QAgent(rng=randomGenerator)
 
-    agent.run(True, episodes=5, draw=True)
+    agent.run(True, episodes=100, draw=True)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
+    print totalRewards
 
     np.savez('qagent_short_orizon_data', totalRewards, rewardStreams)
