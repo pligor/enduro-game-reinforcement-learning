@@ -2,7 +2,7 @@ import os
 import numpy as np
 from road_category import RoadCategory
 from extreme_position import ExtremePosition
-from enduro_data_types import tuple_dt
+from enduro_data_types import long_tuple_dt
 from how_many_opponents import HowManyOpponents
 
 def pop(arr):
@@ -50,7 +50,7 @@ categories = np.array([
 
 tupleList = []
 
-getInitialTuple = lambda: np.array(("", "", False, False, False, False, False, False, "0", "0"), dtype=tuple_dt)
+getInitialTuple = lambda: np.array(("", "", False, False, False, False, False, False, "0", "0"), dtype=long_tuple_dt)
 
 # tuple = getInitialTuple()
 
@@ -77,7 +77,7 @@ func(categories, getInitialTuple())
 
 tuples_dt = np.dtype([
     ('id', np.int),
-    ('tuple', tuple_dt)
+    ('tuple', long_tuple_dt)
 ])
 tuples = np.array([(i, tuple) for i, tuple in enumerate(tupleList)], dtype=tuples_dt)
 
