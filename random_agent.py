@@ -4,12 +4,10 @@ from enduro.action import Action
 from enduro.state import EnvironmentState
 import time
 import numpy as np
+from store_reward_agent import StoreRewardAgent
 #import matplotlib.pyplot as plt #it's not working
 
-class RandomAgent(Agent):
-    def getRewardInfo(self):
-        return np.array(self.totalRewards), np.array(self.rewardStreams)
-
+class RandomAgent(StoreRewardAgent, Agent):
     def getActionsSet(self):
         """including the noop action in our possible actions"""
         return super(RandomAgent, self).getActionsSet() + [Action.NOOP]
@@ -20,27 +18,24 @@ class RandomAgent(Agent):
         self.total_reward = None
         self.reward_stream = None
         self.rng = rng
-        #self.counter = 0
+        self.curReward = None
         print [Action.toString(a) for a in self.getActionsSet()]
         print type(self.getActionsSet())
-        #print len(self.getActionsSet())
-
-        self.totalRewards = []
-        self.rewardStreams = []
 
     def initialise(self, grid):
-        if self.total_reward is not None:
-            self.totalRewards.append(self.total_reward)
-        if self.reward_stream is not None:
-            self.rewardStreams.append(np.array(self.reward_stream))
+        """ Called at the beginning of an episode. Use it to construct the initial state."""
+        super(RandomAgent, self).initialise(grid)
 
-        """ Called at the beginning of an episode. Use it to construct
-        the initial state.
-        """
         # Reset the total reward for the episode
         self.total_reward = 0
         print "new episode"
         self.reward_stream = []
+        self.curReward = None
+
+    def run(self, learn, episodes=1, draw=False):
+        super(RandomAgent, self).run(learn, episodes, draw)
+        #do something at the end of the run
+        super(RandomAgent, self).appendRewardInfo()
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -49,9 +44,7 @@ class RandomAgent(Agent):
         actionSet = self.getActionsSet()
 
         actionInd = self.rng.randint(0, len(actionSet))
-        #print actionInd
 
-        #action = Action.NOOP
         action = actionSet[actionInd]
         #print Action.toString(action)
 
@@ -64,11 +57,13 @@ class RandomAgent(Agent):
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
 
-        cur_reward = self.move(action)
+        self.curReward = self.move(action)
 
-        self.reward_stream.append(cur_reward)
+        self.total_reward += self.curReward
 
-        self.total_reward += cur_reward
+        super(RandomAgent, self).act()
+
+        #cv2.waitKey(1000)
 
     @staticmethod
     def isLeft(grid):
@@ -114,10 +109,10 @@ if __name__ == "__main__":
     agent = RandomAgent(rng=rng)
 
     agent.run(True, episodes=100, draw=True)
-    print 'Total reward: ' + str(agent.total_reward)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
 
+    print len(rewardStreams)
     print totalRewards
     meanTotalRewards = np.mean(totalRewards)
     varTotalRewards = np.var(totalRewards)

@@ -72,8 +72,6 @@ class KeyboardAgent(AgentWithShortOrizonSenses):
             stateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
             print stateId
 
-        #print grid
-
         # Visualise the environment grid
         cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
 
