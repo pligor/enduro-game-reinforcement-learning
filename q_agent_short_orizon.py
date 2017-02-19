@@ -9,23 +9,14 @@ from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
 from store_reward_agent import StoreRewardAgent
 
 class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
-    def getActionsSet(self):
-        """including the noop action in our possible actions"""
-        return super(QAgent, self).getActionsSet() + [Action.NOOP]
-
-    def getNextLearningRate(self):
-        # learningRate = 1. / np.power(self.cur_t, self.lr_p_param)
-        # self.cur_t += 1
-        # return learningRate
-        return 0.2
-
     def __init__(self, rng):
         super(QAgent, self).__init__(rng)
         # Add member variables to your class here
-        self.lr_p_param = 0.51
+        self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
         self.gamma = 0.9
+        self.computationalTemperature = 10
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
@@ -41,6 +32,7 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         self.prevGrid = None
         self.curReward = None
         self.nextStateId = None
+        self.episodeCounter = 0
 
         # TODO either set the e greedy policy to something else or give initial value functions
         # self.bellmanQ = np.zeros(Qshape)
@@ -62,6 +54,8 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         self.curReward = None
         self.nextStateId = None
 
+        self.episodeCounter += 1
+
     def updateQsa(self, stateId, actionId, value):
         self.bellmanQ[stateId][actionId] = value
         return self.bellmanQ[stateId][actionId]
@@ -77,6 +71,37 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         #do something at the end of the run
         super(QAgent, self).appendRewardInfo()
 
+    def getActionsSet(self):
+        """including the noop action in our possible actions"""
+        return super(QAgent, self).getActionsSet() + [Action.NOOP]
+
+    def getNextLearningRate(self):
+        #by step
+        # learningRate = 1. / np.power(self.cur_t, self.lr_p_param)
+        # self.cur_t += 1
+        # return learningRate
+
+        #constant
+        #return 0.5
+
+        #by episode
+        return 1. / np.power(self.episodeCounter, self.lr_p_param)
+
+    def maxQvalueSelection(self, stateId):
+        return self.actionById[
+            np.argmax(self.getQbyS(stateId))
+        ]
+
+    def softmaxActionSelection(self, stateId):
+        Qs = self.getQbyS(stateId)
+        exps = np.exp(Qs) / self.computationalTemperature
+        summ = np.sum(exps)
+        probs = exps / summ
+
+        return self.actionById[
+            np.argmax(probs)
+        ]
+
     def act(self):
         """ Implements the decision making process for selecting
         an action. Remember to store the obtained reward.
@@ -89,11 +114,7 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         # time.sleep(1)  # seconds
         cv2.waitKey(40)
 
-        self.curAction = self.actionById[
-            np.argmax(self.getQbyS(self.curStateId))
-        ]
-
-        print Action.toString(self.curAction)
+        self.curAction = self.softmaxActionSelection(self.curStateId)
 
         self.curReward = self.move(self.curAction)
 
@@ -109,8 +130,6 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         """
 
         self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
-
-        print "next state id: %d" % self.nextStateId
 
         # Visualise the environment grid
         cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
@@ -140,12 +159,16 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
-        print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
+        if iteration % 10 == 0:
+            print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
+            print Action.toString(self.curAction)
+            print "next state id: %d" % self.nextStateId
+            print
+
         # Show the game frame only if not learning
         if not learn:
             cv2.imshow("Enduro", self._image)
             cv2.waitKey(40)
-        print
 
 
 if __name__ == "__main__":

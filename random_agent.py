@@ -13,10 +13,9 @@ class RandomAgent(StoreRewardAgent, Agent):
         return super(RandomAgent, self).getActionsSet() + [Action.NOOP]
 
     def __init__(self, rng):
-        super(RandomAgent, self).__init__()
+        super(RandomAgent, self).__init__(rng)
         # Add member variables to your class here
         self.total_reward = None
-        self.reward_stream = None
         self.rng = rng
         self.curReward = None
         print [Action.toString(a) for a in self.getActionsSet()]
@@ -29,7 +28,6 @@ class RandomAgent(StoreRewardAgent, Agent):
         # Reset the total reward for the episode
         self.total_reward = 0
         print "new episode"
-        self.reward_stream = []
         self.curReward = None
 
     def run(self, learn, episodes=1, draw=False):
@@ -105,8 +103,8 @@ class RandomAgent(StoreRewardAgent, Agent):
 
 if __name__ == "__main__":
     seed = 16011984
-    rng = np.random.RandomState(seed=seed)
-    agent = RandomAgent(rng=rng)
+    randomGenerator = np.random.RandomState(seed=seed)
+    agent = RandomAgent(rng=randomGenerator)
 
     agent.run(True, episodes=100, draw=True)
 
