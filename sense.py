@@ -4,7 +4,7 @@ from road_category import RoadCategory
 from extreme_position import ExtremePosition
 
 
-class Sense:
+class Sense(object):
     def __init__(self, rng):
         self.rng = rng
         self.gridLength = 11

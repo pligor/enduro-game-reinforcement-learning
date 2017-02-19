@@ -1,17 +1,17 @@
 from collections import OrderedDict
 import cv2
-#from enduro.agent import Agent
+from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
-import time
 import numpy as np
 from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
 from store_reward_agent import StoreRewardAgent
 
-class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
+class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
     def __init__(self, rng):
         super(QAgent, self).__init__(rng)
-        # Add member variables to your class here
+        self.rng = rng
+
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
@@ -185,6 +185,9 @@ if __name__ == "__main__":
     agent.run(True, episodes=100, draw=True)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
-    print totalRewards
 
-    np.savez('qagent_short_orizon_data', totalRewards, rewardStreams)
+    isAnyOfTheBaseClassesShortOrizon = np.any([("ShortOrizon".lower() in b.__name__.lower()) for b in QAgent.__bases__])
+    filename = "qagent_" + ("short" if isAnyOfTheBaseClassesShortOrizon else "long") + "_orizon_data"
+    np.savez(filename, totalRewards, rewardStreams)
+
+    print totalRewards

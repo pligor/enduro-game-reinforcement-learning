@@ -1,8 +1,8 @@
 import numpy as np
 
 class StoreRewardAgent(object):
-    def __init__(self, rng):
-        super(StoreRewardAgent, self).__init__(rng)
+    def __init__(self):
+        super(StoreRewardAgent, self).__init__()
         self.totalRewards = []
         self.rewardStreams = []
         self.reward_stream = None
