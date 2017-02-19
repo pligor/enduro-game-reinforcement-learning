@@ -49,6 +49,8 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
 
     def initialise(self, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
+        super(QAgent, self).initialise(grid)
+
         self.total_reward = 0 # Reset the total reward for the episode
 
         self.curStateId = 512  # run keyboard agent with senses to find this out
@@ -69,6 +71,11 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
 
     def getQbyS(self, stateId):
         return self.bellmanQ[stateId]
+
+    def run(self, learn, episodes=1, draw=False):
+        super(QAgent, self).run(learn, episodes, draw)
+        #do something at the end of the run
+        super(QAgent, self).appendRewardInfo()
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -91,6 +98,8 @@ class QAgent(StoreRewardAgent, AgentWithShortOrizonSenses):
         self.curReward = self.move(self.curAction)
 
         self.total_reward += self.curReward
+
+        super(QAgent, self).act()
 
     def sense(self, grid):
         """ Constructs the next state from sensory signals.
@@ -143,8 +152,10 @@ if __name__ == "__main__":
     seed = 16011984
     randomGenerator = np.random.RandomState(seed=seed)
 
-    a = QAgent(rng=randomGenerator)
+    agent = QAgent(rng=randomGenerator)
 
-    a.run(True, episodes=5, draw=True)
+    agent.run(True, episodes=5, draw=True)
 
-    print 'Total reward: ' + str(a.total_reward)
+    totalRewards, rewardStreams = agent.getRewardInfo()
+
+    np.savez('qagent_short_orizon_data', totalRewards, rewardStreams)
