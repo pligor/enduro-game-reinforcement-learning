@@ -29,5 +29,8 @@ states = generateStates(categories, getInitialTuple, tuples_dt = np.dtype([
 filename = os.path.splitext(os.path.basename(__file__))[0]
 np.save(filename + '.npy', states)
 
+for i in range(len(states)):
+    assert states[i]['id'] == i
+
 print len(states)
 print states[0]

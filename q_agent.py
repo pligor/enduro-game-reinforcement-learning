@@ -9,6 +9,10 @@ import numpy as np
 from store_reward_agent import StoreRewardAgent
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 
+if __name__ == "__main__":
+    totalEpisodesCount = 100
+
+
 class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
     def __init__(self, rng):
         super(QAgent, self).__init__(rng, howFar=4)
@@ -16,11 +20,13 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
+        self.debugging = False
         self.gamma = 0.8
         self.computationalTemperature = 10
-        self.epsilon = 0.1
+        self.epsilon = 0.01
         self.actionSelection = self.maxQvalueSelection
-        self.initial_state_id = 0 # run agent with senses to find this out
+        self.initial_state_id = 36 # run agent with senses to find this out
+        self.filename = "qagent_short_orizon_data"
 
         self.rng = rng
 
@@ -43,6 +49,14 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         # self.bellmanQ = np.zeros(Qshape)
         # self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
         self.bellmanQ = OrderedDict(zip(self.getStateIds(), np.zeros(self.Qshape)))
+
+    def storeRewardInfo(self):
+        # isAnyOfTheBaseClassesShortOrizon = np.any(
+        #     [("ShortOrizon".lower() in b.__name__.lower()) for b in QAgent.__bases__])
+        # filename = "qagent_" + ("short" if isAnyOfTheBaseClassesShortOrizon else "long") + "_orizon_data"
+        totalRewards, rewardStreams = self.getRewardInfo()
+        np.savez(self.filename, totalRewards, rewardStreams)
+        return self.filename
 
     def initialise(self, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
@@ -129,6 +143,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         self.curAction = self.tryRandomActionOr(self.epsilon, lambda: self.actionSelection(self.curStateId))
 
         self.curReward = self.move(self.curAction)
+        #self.curReward = -1 if self.curReward == 0 else self.curReward
 
         self.total_reward += self.curReward
 
@@ -171,12 +186,14 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
-        if iteration % 10 == 0:
+        if iteration % (10 if self.debugging else 100) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
             print
-        cv2.waitKey(40)
+
+        if self.debugging and learn:
+            cv2.waitKey(40)
 
         # Show the game frame only if not learning
         if not learn:
@@ -190,12 +207,10 @@ if __name__ == "__main__":
 
     agent = QAgent(rng=randomGenerator)
 
-    agent.run(True, episodes=1, draw=True)
+    agent.run(True, episodes=totalEpisodesCount, draw=True)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
     print totalRewards
 
-    isAnyOfTheBaseClassesShortOrizon = np.any([("ShortOrizon".lower() in b.__name__.lower()) for b in QAgent.__bases__])
-    filename = "qagent_" + ("short" if isAnyOfTheBaseClassesShortOrizon else "long") + "_orizon_data"
-    print filename
-    # np.savez(filename, totalRewards, rewardStreams)
+    print agent.storeRewardInfo()
+
