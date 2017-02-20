@@ -28,7 +28,7 @@ class StoreRewardAgent(object):
             self.rewardStreams.append(self.reward_stream)
 
     def act(self):
-        assert hasattr(self, 'curReward')
+        assert hasattr(self, 'total_reward')
 
-        self.reward_stream.append(self.curReward)
+        self.reward_stream.append(self.total_reward)
 
