@@ -8,7 +8,8 @@ from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
 from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from store_reward_agent import StoreRewardAgent
 
-class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
+
+class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
     def __init__(self, rng):
         super(QAgent, self).__init__(rng)
         self.rng = rng
@@ -19,6 +20,7 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
         self.gamma = 0.9
         self.computationalTemperature = 10
         self.epsilon = 0.1
+        self.actionSelection = self.maxQvalueSelection
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
@@ -37,14 +39,14 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
         self.episodeCounter = 0
 
         # self.bellmanQ = np.zeros(Qshape)
-        # here we are giving something larger than zero
-        self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
+        # self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
+        self.bellmanQ = OrderedDict(zip(self.getStateIds(), np.zeros(self.Qshape)))
 
     def initialise(self, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
         super(QAgent, self).initialise(grid)
 
-        self.total_reward = 0 # Reset the total reward for the episode
+        self.total_reward = 0  # Reset the total reward for the episode
 
         self.curStateId = 512  # run keyboard agent with senses to find this out
 
@@ -69,7 +71,7 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
 
     def run(self, learn, episodes=1, draw=False):
         super(QAgent, self).run(learn, episodes, draw)
-        #do something at the end of the run
+        # do something at the end of the run
         super(QAgent, self).appendRewardInfo()
 
     def getActionsSet(self):
@@ -77,15 +79,15 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
         return super(QAgent, self).getActionsSet() + [Action.NOOP]
 
     def getNextLearningRate(self):
-        #by step
+        # by step
         # learningRate = 1. / np.power(self.cur_t, self.lr_p_param)
         # self.cur_t += 1
         # return learningRate
 
-        #constant
-        #return 0.5
+        # constant
+        # return 0.5
 
-        #by episode
+        # by episode
         return 1. / np.power(self.episodeCounter, self.lr_p_param)
 
     def maxQvalueSelection(self, stateId):
@@ -93,19 +95,22 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
             np.argmax(self.getQbyS(stateId))
         ]
 
-    def softmaxActionSelection(self, stateId, epsilon = 0.):
+    def softmaxActionSelection(self, stateId):
+        Qs = self.getQbyS(stateId)
+        exps = np.exp(Qs) / self.computationalTemperature
+        summ = np.sum(exps)
+        probs = exps / summ
+
+        return self.actionById[np.argmax(probs)]
+
+    def tryRandomActionOr(self, epsilon, callback):
         assert 0. <= epsilon <= 1.
         epsilon = float(epsilon)
 
         if self.rng.rand() < epsilon:
             return self.getRandomAction()
         else:
-            Qs = self.getQbyS(stateId)
-            exps = np.exp(Qs) / self.computationalTemperature
-            summ = np.sum(exps)
-            probs = exps / summ
-
-            return self.actionById[np.argmax(probs)]
+            return callback()
 
     def getRandomAction(self):
         return self.actionById[self.rng.randint(0, len(self.getActionsSet()))]
@@ -119,7 +124,7 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
 
-        self.curAction = self.softmaxActionSelection(self.curStateId, self.epsilon)
+        self.curAction = self.tryRandomActionOr(self.epsilon, lambda: self.actionSelection(self.curStateId))
 
         self.curReward = self.move(self.curAction)
 
@@ -145,7 +150,7 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
         """ Performs the learning procudre. It is called after act() and
         sense() so you have access to the latest tuple (s, s', a, r).
         """
-        #print self.bellmanQ
+        # print self.bellmanQ
 
         learningRate = self.getNextLearningRate()
 
@@ -169,7 +174,7 @@ class QAgent(AgentWithLongOrizonSenses, StoreRewardAgent, Agent):
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
             print
-        #cv2.waitKey(40)
+        # cv2.waitKey(40)
 
         # Show the game frame only if not learning
         if not learn:
@@ -191,6 +196,4 @@ if __name__ == "__main__":
     isAnyOfTheBaseClassesShortOrizon = np.any([("ShortOrizon".lower() in b.__name__.lower()) for b in QAgent.__bases__])
     filename = "qagent_" + ("short" if isAnyOfTheBaseClassesShortOrizon else "long") + "_orizon_data"
     print filename
-    #np.savez(filename, totalRewards, rewardStreams)
-
-
+    # np.savez(filename, totalRewards, rewardStreams)
