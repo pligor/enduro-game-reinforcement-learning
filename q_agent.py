@@ -1,14 +1,14 @@
-#from collections import OrderedDict
+# from collections import OrderedDict
 import cv2
 from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
 from store_reward_agent import StoreRewardAgent
-#from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
-#from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
+# from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
+# from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
-#from q_dict import Qdict
+# from q_dict import Qdict
 from q_table import Qtable
 
 if __name__ == "__main__":
@@ -17,8 +17,6 @@ if __name__ == "__main__":
 
 class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def __init__(self, rng):
-        super(QAgent, self).__init__(rng, howFar=4)
-
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
@@ -27,8 +25,10 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.computationalTemperature = 10
         self.epsilon = 0.01
         self.actionSelection = self.maxQvalueSelection
-        self.initial_state_id = 36 # run agent with senses to find this out
-        self.filename = "qagent_short_orizon_data"
+        self.initial_state_id = 36  # run agent with senses to find this out
+        self.middlefix = "long"
+
+        super(QAgent, self).__init__(rng, howFar=10)
 
         self.rng = rng
 
@@ -56,8 +56,9 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         #     [("ShortOrizon".lower() in b.__name__.lower()) for b in QAgent.__bases__])
         # filename = "qagent_" + ("short" if isAnyOfTheBaseClassesShortOrizon else "long") + "_orizon_data"
         totalRewards, rewardStreams = self.getRewardInfo()
-        np.savez(self.filename, totalRewards, rewardStreams)
-        return self.filename
+        filename = "qagent_%s_orizon_data" % self.middlefix
+        np.savez(filename, totalRewards, rewardStreams)
+        return filename
 
     def initialise(self, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
@@ -134,7 +135,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.curAction = self.tryRandomActionOr(self.epsilon, lambda: self.actionSelection(self.curStateId))
 
         self.curReward = self.move(self.curAction)
-        #self.curReward = -1 if self.curReward == 0 else self.curReward
+        # self.curReward = -1 if self.curReward == 0 else self.curReward
 
         self.total_reward += self.curReward
 
@@ -198,8 +199,9 @@ if __name__ == "__main__":
 
     agent.run(True, episodes=totalEpisodesCount, draw=True)
 
-    totalRewards, rewardStreams = agent.getRewardInfo()
-    print totalRewards
+    total_rewards, _ = agent.getRewardInfo()
+    print total_rewards
 
     print agent.storeRewardInfo()
 
+    np.save(agent.middlefix + "_bellmanQ", agent.bellmanQ)
