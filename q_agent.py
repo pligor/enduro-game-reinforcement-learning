@@ -20,6 +20,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         self.computationalTemperature = 10
         self.epsilon = 0.1
         self.actionSelection = self.maxQvalueSelection
+        self.initial_state_id = 0 # run agent with senses to find this out
 
         self.rng = rng
 
@@ -49,7 +50,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
 
         self.total_reward = 0  # Reset the total reward for the episode
 
-        self.curStateId = 512  # run keyboard agent with senses to find this out
+        self.curStateId = self.initial_state_id
 
         self.cur_t = 1
 
@@ -170,7 +171,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
-        if iteration % 100 == 0:
+        if iteration % 10 == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId

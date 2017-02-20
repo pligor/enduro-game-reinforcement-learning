@@ -25,7 +25,7 @@ class AgentWithVarOrizonSenses(AgentWithSenses):
     def getAllSenses(self, prevGrid, action, newGrid):
         pos = self.sensor.getExtremePosition(latestGrid=newGrid)
         oppLeft = self.__countToTextClass(self.sensor.countOppsVarLen(newGrid, left_boolean=True, howFar=self.howFar))
-        oppRight = self.__countToTextClass(self.sensor.countOpponents(newGrid, left_boolean=False, howFar=self.howFar))
+        oppRight = self.__countToTextClass(self.sensor.countOppsVarLen(newGrid, left_boolean=False, howFar=self.howFar))
         areOpponentsSurpassing = self.sensor.doesOpponentSurpasses(prevGrid, newGrid)
 
         return np.array((pos,
