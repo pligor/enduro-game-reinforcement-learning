@@ -4,17 +4,18 @@ from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
+from store_reward_agent import StoreRewardAgent
 #from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
 #from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
-from store_reward_agent import StoreRewardAgent
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
-from q_dict import Qdict
+#from q_dict import Qdict
+from q_table import Qtable
 
 if __name__ == "__main__":
     totalEpisodesCount = 100
 
 
-class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qdict, Agent):
+class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def __init__(self, rng):
         super(QAgent, self).__init__(rng, howFar=4)
 
