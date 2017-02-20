@@ -5,9 +5,9 @@ from enduro.state import EnvironmentState
 from sense import Sense
 import numpy as np
 from enduro_data_types import long_tuple_dt
-from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
+from agent_with_senses import AgentWithSenses
 
-class AgentWithLongOrizonSenses(AgentWithShortOrizonSenses):
+class AgentWithLongOrizonSenses(AgentWithSenses):
     def __init__(self, rng):
         super(AgentWithLongOrizonSenses, self).__init__(rng)
         # Add member variables to your class here

@@ -235,6 +235,14 @@ class Sense(object):
         else:
             return str(count)
 
+    def countOppsVarLen(self, grid, left_boolean, howFar):
+        assert self.gridWidth % 2 == 0
+        howFar = int(howFar)
+        assert 0 <= howFar < self.gridLength
+
+        targetArea = grid[0:(howFar+1), :self.gridWidth/2] if left_boolean else grid[0:(howFar+1), self.gridWidth/2:]
+        return np.sum(targetArea == 1)
+
 if __name__ == "__main__":
     seed = 16011984
     rng = np.random  # .RandomState(seed=seed)

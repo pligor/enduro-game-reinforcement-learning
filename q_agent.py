@@ -4,15 +4,14 @@ from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
-from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
-from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
+#from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
+#from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from store_reward_agent import StoreRewardAgent
+from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 
-
-class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
+class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
     def __init__(self, rng):
-        super(QAgent, self).__init__(rng)
-        self.rng = rng
+        super(QAgent, self).__init__(rng, howFar=4)
 
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
@@ -21,6 +20,8 @@ class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
         self.computationalTemperature = 10
         self.epsilon = 0.1
         self.actionSelection = self.maxQvalueSelection
+
+        self.rng = rng
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
@@ -174,7 +175,7 @@ class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
             print
-        # cv2.waitKey(40)
+        cv2.waitKey(40)
 
         # Show the game frame only if not learning
         if not learn:
@@ -188,7 +189,7 @@ if __name__ == "__main__":
 
     agent = QAgent(rng=randomGenerator)
 
-    agent.run(True, episodes=300, draw=True)
+    agent.run(True, episodes=1, draw=True)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
     print totalRewards
