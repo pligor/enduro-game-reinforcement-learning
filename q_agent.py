@@ -20,13 +20,13 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
-        self.debugging = False
+        self.debugging = True
         self.gamma = 0.8
         self.computationalTemperature = 10
         self.epsilon = 0.01
         self.actionSelection = self.maxQvalueSelection
         self.initial_state_id = 36  # run agent with senses to find this out
-        self.middlefix = "long"
+        self.middlefix = "test"
 
         super(QAgent, self).__init__(rng, howFar=10)
 
@@ -46,10 +46,8 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.nextStateId = None
         self.episodeCounter = 0
 
-        # self.Qshape = (len(self.states), len(self.getActionsSet()))
-        # # self.bellmanQ = np.zeros(Qshape)
-        # # self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
-        # self.bellmanQ = OrderedDict(zip(self.getStateIds(), np.zeros(self.Qshape)))
+        # from sense import Sense
+        # self.anotherSensor = Sense(rng)
 
     def storeRewardInfo(self):
         # isAnyOfTheBaseClassesShortOrizon = np.any(
@@ -147,6 +145,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         gird -- 2-dimensional numpy array containing the latest grid
                 representation of the environment
         """
+        #print self.anotherSensor.isRoadTurningRight(self.prevGrid, self.curAction, grid)
 
         self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
 
@@ -176,14 +175,15 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
-        if iteration % (10 if self.debugging else 100) == 0:
+        if iteration % (1 if self.debugging else 100) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
             print
 
         if self.debugging and learn:
-            cv2.waitKey(40)
+            cv2.waitKey(300)
+            cv2.imshow("Enduro", self._image)
 
         # Show the game frame only if not learning
         if not learn:

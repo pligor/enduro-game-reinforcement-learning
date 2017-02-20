@@ -56,7 +56,18 @@ class Sense(object):
             prevPos = prevPos[0]
             newPos = newPos[0]
 
-        return (prevPos > newPos and action != Action.LEFT)
+        return (prevPos == newPos and action == Action.RIGHT) or (newPos < prevPos and action != Action.LEFT)
+
+    # @staticmethod
+    # def isRoadTurningRight(prevGrid, action, newGrid):
+    #     prevPos = np.argwhere(prevGrid[0] == 2)
+    #     newPos = np.argwhere(newGrid[0] == 2)
+    #     assert prevPos.shape == newPos.shape
+    #     for i in range(len(prevPos.shape)):
+    #         prevPos = prevPos[0]
+    #         newPos = newPos[0]
+    #
+    #     return (prevPos > newPos and action != Action.LEFT)
 
     @staticmethod
     def isRoadTurningLeft(prevGrid, action, newGrid):
@@ -67,7 +78,7 @@ class Sense(object):
             prevPos = prevPos[0]
             newPos = newPos[0]
 
-        # return (prevPos < newPos and action != Action.LEFT) or (prevPos == newPos and action == Action.RIGHT)
+        # return (prevPos < newPos and action != Action.LEFT) or (prevPos == newPos and action == Action.LEFT)
         return (prevPos < newPos and action != Action.RIGHT)
 
     def isOpponentInFront(self, grid, shift=0):
