@@ -17,7 +17,7 @@ class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Agent):
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
-        self.gamma = 0.9
+        self.gamma = 0.8
         self.computationalTemperature = 10
         self.epsilon = 0.1
         self.actionSelection = self.maxQvalueSelection
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
     agent = QAgent(rng=randomGenerator)
 
-    agent.run(True, episodes=100, draw=True)
+    agent.run(True, episodes=300, draw=True)
 
     totalRewards, rewardStreams = agent.getRewardInfo()
     print totalRewards

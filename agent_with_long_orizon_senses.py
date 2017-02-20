@@ -2,7 +2,7 @@ import cv2
 from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
-from long_sense import LongSense
+from sense import Sense
 import numpy as np
 from enduro_data_types import long_tuple_dt
 from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
@@ -11,7 +11,6 @@ class AgentWithLongOrizonSenses(AgentWithShortOrizonSenses):
     def __init__(self, rng):
         super(AgentWithLongOrizonSenses, self).__init__(rng)
         # Add member variables to your class here
-        self.sensor = LongSense(rng)
         self.states = np.load('enduro_states_long_horizon.npy')
 
     def getAllSenses(self, prevGrid, action, newGrid):
