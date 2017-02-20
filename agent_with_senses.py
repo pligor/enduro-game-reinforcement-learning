@@ -5,7 +5,6 @@ from enduro_data_types import tuple_dt
 class AgentWithSenses(object):
     def __init__(self, rng):
         super(AgentWithSenses, self).__init__()
-        # Add member variables to your class here
         self.sensor = Sense(rng)
 
     def getStateIds(self):

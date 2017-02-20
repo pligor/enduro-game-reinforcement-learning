@@ -6,10 +6,9 @@ from how_many_opponents_discrete import HowManyOpponentsDiscrete
 
 class AgentWithVarOrizonSenses(AgentWithSenses):
     def __init__(self, rng, howFar):
-        super(AgentWithVarOrizonSenses, self).__init__(rng)
-        # Add member variables to your class here
         self.states = np.load('enduro_states_short_v2_horizon.npy')
         self.howFar = howFar
+        super(AgentWithVarOrizonSenses, self).__init__(rng)
 
     @staticmethod
     def __countToTextClass(count):

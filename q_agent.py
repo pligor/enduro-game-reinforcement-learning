@@ -1,4 +1,4 @@
-from collections import OrderedDict
+#from collections import OrderedDict
 import cv2
 from enduro.agent import Agent
 from enduro.action import Action
@@ -8,12 +8,13 @@ import numpy as np
 #from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from store_reward_agent import StoreRewardAgent
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
+from q_dict import Qdict
 
 if __name__ == "__main__":
     totalEpisodesCount = 100
 
 
-class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
+class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qdict, Agent):
     def __init__(self, rng):
         super(QAgent, self).__init__(rng, howFar=4)
 
@@ -35,8 +36,6 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
 
         print [(k, Action.toString(v)) for k, v in self.actionById.iteritems()]
 
-        self.Qshape = (len(self.states), len(self.getActionsSet()))
-
         self.total_reward = None
         self.curStateId = None
         self.cur_t = None
@@ -46,9 +45,10 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         self.nextStateId = None
         self.episodeCounter = 0
 
-        # self.bellmanQ = np.zeros(Qshape)
-        # self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
-        self.bellmanQ = OrderedDict(zip(self.getStateIds(), np.zeros(self.Qshape)))
+        # self.Qshape = (len(self.states), len(self.getActionsSet()))
+        # # self.bellmanQ = np.zeros(Qshape)
+        # # self.bellmanQ = OrderedDict(zip(self.getStateIds(), self.rng.rand(self.Qshape[0], self.Qshape[1])))
+        # self.bellmanQ = OrderedDict(zip(self.getStateIds(), np.zeros(self.Qshape)))
 
     def storeRewardInfo(self):
         # isAnyOfTheBaseClassesShortOrizon = np.any(
@@ -74,16 +74,6 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         self.nextStateId = None
 
         self.episodeCounter += 1
-
-    def updateQsa(self, stateId, actionId, value):
-        self.bellmanQ[stateId][actionId] = value
-        return self.bellmanQ[stateId][actionId]
-
-    def getQsa(self, stateId, actionId):
-        return self.bellmanQ[stateId][actionId]
-
-    def getQbyS(self, stateId):
-        return self.bellmanQ[stateId]
 
     def run(self, learn, episodes=1, draw=False):
         super(QAgent, self).run(learn, episodes, draw)
@@ -167,8 +157,6 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Agent):
         """ Performs the learning procudre. It is called after act() and
         sense() so you have access to the latest tuple (s, s', a, r).
         """
-        # print self.bellmanQ
-
         learningRate = self.getNextLearningRate()
 
         curActionId = self.idByAction[self.curAction]
