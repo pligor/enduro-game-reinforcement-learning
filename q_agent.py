@@ -1,4 +1,5 @@
 # from collections import OrderedDict
+from __future__ import division
 import cv2
 from enduro.agent import Agent
 from enduro.action import Action
@@ -9,7 +10,7 @@ from store_reward_agent import StoreRewardAgent
 # from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 # from q_dict import Qdict
-from q_table import Qtable
+from q_table import Qtable, Qcase
 
 if __name__ == "__main__":
     totalEpisodesCount = 100
@@ -20,17 +21,25 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
-        self.debugging = True
+        self.debugging = 0 #zero for actual run
         self.gamma = 0.8
-        self.computationalTemperature = 10
-        self.epsilon = 0.01
-        self.actionSelection = self.maxQvalueSelection
+        self.computationalTemperature = 5e-3 #small more like max, large more like random
+        self.epsilon = 0.  # 0.01
+        self.actionSelection = self.softmaxActionSelection_computationallySafe
         self.initial_state_id = 36  # run agent with senses to find this out
-        self.middlefix = "test"
+        self.middlefix = "softmax"
+        #self.initialQ = Qcase.ZERO
 
-        super(QAgent, self).__init__(rng, howFar=10)
+        def changeQtable(table):
+            table[:, 0] = 10
+            table[:, 1:4] = 0
+            return table
+
+        self.initialQ = changeQtable
 
         self.rng = rng
+
+        super(QAgent, self).__init__(rng, howFar=10)
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
@@ -58,23 +67,6 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         np.savez(filename, totalRewards, rewardStreams)
         return filename
 
-    def initialise(self, grid):
-        """Called at the beginning of an episode. Use it to construct the initial state."""
-        super(QAgent, self).initialise(grid)
-
-        self.total_reward = 0  # Reset the total reward for the episode
-
-        self.curStateId = self.initial_state_id
-
-        self.cur_t = 1
-
-        self.curAction = None
-        self.prevGrid = grid
-        self.curReward = None
-        self.nextStateId = None
-
-        self.episodeCounter += 1
-
     def run(self, learn, episodes=1, draw=False):
         super(QAgent, self).run(learn, episodes, draw)
         # do something at the end of the run
@@ -82,7 +74,11 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
 
     def getActionsSet(self):
         """including the noop action in our possible actions"""
-        return super(QAgent, self).getActionsSet() + [Action.NOOP]
+        if hasattr(self, "allActionSet") and self.allActionSet is not None:
+            return self.allActionSet
+        else:
+            self.allActionSet = super(QAgent, self).getActionsSet() + [Action.NOOP]
+            return self.allActionSet
 
     def getNextLearningRate(self):
         # by step
@@ -101,13 +97,46 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
             np.argmax(self.getQbyS(stateId))
         ]
 
+    @staticmethod
+    def safeRandomChoice(arr, probs):
+        #uncomment if you have a problem with the probs
+        # sumP = np.sum(probs)
+        # if (1. - sumP) ** 2 > 1e-8:
+        #     residual = np.abs(1. - sumP) / len(probs)
+        #     if sumP < 1:
+        #         probs += residual
+        #     else:
+        #         probs -= residual
+        return np.random.choice(arr, 1, p=probs)[0]
+
     def softmaxActionSelection(self, stateId):
         Qs = self.getQbyS(stateId)
-        exps = np.exp(Qs) / self.computationalTemperature
+        numerators = np.true_divide(Qs, self.computationalTemperature)
+        exps = np.exp(numerators)
         summ = np.sum(exps)
-        probs = exps / summ
+        probs = np.true_divide(exps, summ)
+        if self.debugging > 0:
+            print ["%.3f" % p for p in probs]
+        else:
+            self.probs_debug = ["%.3f" % p for p in probs], ["%.3f" % p for p in Qs]
+        # return self.actionById[np.argmax(probs)]
+        return self.safeRandomChoice(self.getActionsSet(), probs)
 
-        return self.actionById[np.argmax(probs)]
+    def softmaxActionSelection_computationallySafe(self, stateId):
+        Qs = self.getQbyS(stateId)
+        numerators = np.true_divide(Qs, self.computationalTemperature)
+        repeats = np.tile(numerators[np.newaxis], (len(numerators), 1))
+        removes = numerators[np.newaxis].T
+        denoms = repeats - removes
+        expDenoms = np.exp(denoms)
+        sumDenoms = np.sum(expDenoms, axis=1)
+        probs = 1. / sumDenoms
+        if self.debugging > 0:
+            print ["%.3f" % p for p in probs]
+        else:
+            self.probs_debug = ["%.3f" % p for p in probs], ["%.3f" % p for p in Qs]
+        # return self.actionById[np.argmax(probs)]
+        return self.safeRandomChoice(self.getActionsSet(), probs)
 
     def tryRandomActionOr(self, epsilon, callback):
         assert 0. <= epsilon <= 1.
@@ -121,6 +150,27 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def getRandomAction(self):
         return self.actionById[self.rng.randint(0, len(self.getActionsSet()))]
 
+    @staticmethod
+    def areOpponents(grid):
+        return np.sum(grid == 1)
+
+    def initialise(self, grid):
+        """Called at the beginning of an episode. Use it to construct the initial state."""
+        super(QAgent, self).initialise(grid)
+
+        self.total_reward = 0  # Reset the total reward for the episode
+
+        self.curStateId = self.initial_state_id
+
+        self.cur_t = 1
+
+        self.curAction = None
+        self.prevGrid = grid
+        self.curReward = None
+        self.nextStateId = None
+
+        self.episodeCounter += 1
+
     def act(self):
         """ Implements the decision making process for selecting
         an action. Remember to store the obtained reward.
@@ -133,7 +183,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.curAction = self.tryRandomActionOr(self.epsilon, lambda: self.actionSelection(self.curStateId))
 
         self.curReward = self.move(self.curAction)
-        # self.curReward = -1 if self.curReward == 0 else self.curReward
+        #self.curReward = -0.01 if self.curReward == 0 else self.curReward
 
         self.total_reward += self.curReward
 
@@ -145,7 +195,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         gird -- 2-dimensional numpy array containing the latest grid
                 representation of the environment
         """
-        #print self.anotherSensor.isRoadTurningRight(self.prevGrid, self.curAction, grid)
+        # print self.anotherSensor.isRoadTurningRight(self.prevGrid, self.curAction, grid)
 
         self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
 
@@ -175,14 +225,15 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
-        if iteration % (1 if self.debugging else 100) == 0:
+        if iteration % (100 if self.debugging == 0 else 1) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
+            print self.probs_debug
             print
 
-        if self.debugging and learn:
-            cv2.waitKey(300)
+        if self.debugging > 0 and learn:
+            cv2.waitKey(self.debugging)
             cv2.imshow("Enduro", self._image)
 
         # Show the game frame only if not learning
