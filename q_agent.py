@@ -6,8 +6,8 @@ from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
 from store_reward_agent import StoreRewardAgent
-# from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
-# from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
+from agent_with_short_orizon_senses import AgentWithShortOrizonSenses
+from agent_with_long_orizon_senses import AgentWithLongOrizonSenses
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 # from q_dict import Qdict
 from q_table import Qtable, Qcase
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     totalEpisodesCount = 100
 
 
-class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
+class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def __init__(self, rng):
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
@@ -27,7 +27,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.epsilon = 0.  # 0.01
         self.actionSelection = self.softmaxActionSelection_computationallySafe
         self.initial_state_id = 36  # run agent with senses to find this out
-        self.middlefix = "softmax"
+        self.middlefix = "too_many_states"
         #self.initialQ = Qcase.ZERO
 
         def changeQtable(table):
@@ -39,7 +39,8 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
 
         self.rng = rng
 
-        super(QAgent, self).__init__(rng, howFar=10)
+        #super(QAgent, self).__init__(rng, howFar=10)
+        super(QAgent, self).__init__(rng)
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())

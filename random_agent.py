@@ -13,7 +13,7 @@ class RandomAgent(StoreRewardAgent, Agent):
         return super(RandomAgent, self).getActionsSet() + [Action.NOOP]
 
     def __init__(self, rng):
-        super(RandomAgent, self).__init__(rng)
+        super(RandomAgent, self).__init__()
         # Add member variables to your class here
         self.total_reward = None
         self.rng = rng

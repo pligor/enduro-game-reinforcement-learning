@@ -4,9 +4,9 @@ from agent_with_senses import AgentWithSenses
 
 class AgentWithShortOrizonSenses(AgentWithSenses):
     def __init__(self, rng):
-        super(AgentWithShortOrizonSenses, self).__init__()
-        # Add member variables to your class here
         self.states = np.load('enduro_states_short_horizon.npy')
+
+        super(AgentWithShortOrizonSenses, self).__init__(rng)
 
     def getAllSenses(self, prevGrid, action, newGrid):
         roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
