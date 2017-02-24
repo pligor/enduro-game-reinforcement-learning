@@ -246,12 +246,16 @@ class Sense(object):
         else:
             return str(count)
 
-    def countOppsVarLen(self, grid, left_boolean, howFar):
+    def countOppsVarLen(self, grid, left_boolean, howFar, startFrom = 0):
         assert self.gridWidth % 2 == 0
         howFar = int(howFar)
         assert 0 <= howFar < self.gridLength
+        startFrom = int(startFrom)
+        assert 0 <= startFrom <= howFar
 
-        targetArea = grid[0:(howFar+1), :self.gridWidth/2] if left_boolean else grid[0:(howFar+1), self.gridWidth/2:]
+        targetArea = grid[startFrom:(howFar+1), :self.gridWidth/2] if left_boolean else \
+            grid[startFrom:(howFar+1), self.gridWidth/2:]
+
         return np.sum(targetArea == 1)
 
 if __name__ == "__main__":
