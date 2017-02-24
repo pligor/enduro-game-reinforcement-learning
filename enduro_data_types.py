@@ -4,6 +4,19 @@ from extreme_position import ExtremePosition
 from how_many_opponents import HowManyOpponents
 from how_many_opponents_discrete import HowManyOpponentsDiscrete
 
+tuple_boeing_dt = np.dtype([
+    ('road', np.str, np.max([len(x) for x in np.array(RoadCategory().getAll())])),
+    ('pos', np.str, np.max([len(x) for x in np.array(ExtremePosition().getAll())])),
+    ('oppNearLeft', np.str, np.max([len(x) for x in np.array(HowManyOpponentsDiscrete().getAll())])),
+    ('oppNearRight', np.str, np.max([len(x) for x in np.array(HowManyOpponentsDiscrete().getAll())])),
+    ('oppFarLeft', np.str, np.max([len(x) for x in np.array(HowManyOpponentsDiscrete().getAll())])),
+    ('oppFarRight', np.str, np.max([len(x) for x in np.array(HowManyOpponentsDiscrete().getAll())])),
+    ('surpassing', np.bool),
+    ('oppLeft', np.bool),
+    ('oppRight', np.bool),
+])
+
+
 tuple_v2_dt = np.dtype([
     ('pos', np.str, np.max([len(x) for x in np.array(ExtremePosition().getAll())])),
     ('oppLeft', np.str, np.max([len(x) for x in np.array(HowManyOpponentsDiscrete().getAll())])),
