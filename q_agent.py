@@ -16,18 +16,22 @@ if __name__ == "__main__":
     totalEpisodesCount = 100
 
 
-class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Qtable, Agent):
+class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
     def __init__(self, rng):
         self.lr_p_param = 1
         assert 0.5 < self.lr_p_param <= 1
 
+        # self.epsilon = 0.
+        # self.actionSelection = self.softmaxActionSelection_computationallySafe
+        self.computationalTemperature = 5e-3  # small more like max, large more like random
+
+        self.epsilon = 0.01
+        self.actionSelection = self.maxQvalueSelection
+
         self.debugging = 0 #zero for actual run
         self.gamma = 0.8
-        self.computationalTemperature = 5e-3 #small more like max, large more like random
-        self.epsilon = 0.  # 0.01
-        self.actionSelection = self.softmaxActionSelection_computationallySafe
         self.initial_state_id = 36  # run agent with senses to find this out
-        self.middlefix = "too_many_states"
+        self.middlefix = "short"
         #self.initialQ = Qcase.ZERO
 
         def changeQtable(table):
@@ -39,8 +43,8 @@ class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Qtable, Agent):
 
         self.rng = rng
 
-        #super(QAgent, self).__init__(rng, howFar=10)
-        super(QAgent, self).__init__(rng)
+        super(QAgent, self).__init__(rng, howFar=4)
+        #super(QAgent, self).__init__(rng)
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
         self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
@@ -230,7 +234,7 @@ class QAgent(AgentWithShortOrizonSenses, StoreRewardAgent, Qtable, Agent):
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
-            print self.probs_debug
+            #print self.probs_debug
             print
 
         if self.debugging > 0 and learn:
