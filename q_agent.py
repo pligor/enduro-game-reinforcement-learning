@@ -31,7 +31,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
         self.debugging = 0 #zero for actual run
         self.gamma = 0.8
         self.initial_state_id = 36  # run agent with senses to find this out
-        self.middlefix = "short"
+        self.middlefix = "long"
         #self.initialQ = Qcase.ZERO
 
         def changeQtable(table):
@@ -43,7 +43,7 @@ class QAgent(AgentWithVarOrizonSenses, StoreRewardAgent, Qtable, Agent):
 
         self.rng = rng
 
-        super(QAgent, self).__init__(rng, howFar=4)
+        super(QAgent, self).__init__(rng, howFar=10)
         #super(QAgent, self).__init__(rng)
 
         self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
