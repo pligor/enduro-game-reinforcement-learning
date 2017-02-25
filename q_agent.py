@@ -12,29 +12,29 @@ from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 from q_table import Qtable, Qcase
 
 if __name__ == "__main__":
-    totalEpisodesCount = 100
+    totalEpisodesCount = 50
 
 class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
     def __init__(self, rng):
-        self.lr_p_param = 1
+        self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
 
-        # self.epsilon = 0.
-        # self.actionSelection = self.softmaxActionSelection_computationallySafe
+        self.epsilon = 0.
+        self.actionSelection = self.softmaxActionSelection_computationallySafe
         self.computationalTemperature = 5e-3  # small more like max, large more like random
 
-        self.epsilon = 0.01
-        self.actionSelection = self.maxQvalueSelection
+        #self.epsilon = 0.01
+        #self.actionSelection = self.maxQvalueSelection
 
         self.debugging = 0 #zero for actual run
         self.gamma = 0.8
-        self.initial_state_id = 36  # run agent with senses to find this out
+        self.initial_state_id = 5184  # run agent with senses to find this out
         self.middlefix = "boeing"
         #self.initialQ = Qcase.ZERO
 
         def changeQtable(table):
             table[:, 0] = 10
-            table[:, 1:4] = 0
+            #table[:, 1:4] = 0
             return table
 
         self.initialQ = changeQtable
@@ -137,7 +137,7 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
         if self.debugging > 0:
             print ["%.3f" % p for p in probs]
         else:
-            self.probs_debug = ["%.3f" % p for p in probs], ["%.3f" % p for p in Qs]
+            self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
         # return self.actionById[np.argmax(probs)]
         return self.safeRandomChoice(self.getActionsSet(), probs)
 
@@ -232,7 +232,8 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
             print "next state id: %d" % self.nextStateId
-            #print self.probs_debug
+            if self.actionSelection == self.softmaxActionSelection_computationallySafe:
+                print self.probs_debug
             print
 
         if self.debugging > 0 and learn:
