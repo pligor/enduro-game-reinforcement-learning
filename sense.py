@@ -249,7 +249,7 @@ class Sense(object):
     def countOppsVarLen(self, grid, left_boolean, howFar, startFrom = 0):
         assert self.gridWidth % 2 == 0
         howFar = int(howFar)
-        assert 0 <= howFar < self.gridLength
+        assert 0 <= howFar <= self.gridLength
         startFrom = int(startFrom)
         assert 0 <= startFrom <= howFar
 
