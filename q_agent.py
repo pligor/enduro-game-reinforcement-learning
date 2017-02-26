@@ -10,18 +10,23 @@ from agent_with_boeing_senses import AgentWithBoeingSenses
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 # from q_dict import Qdict
 from q_table import Qtable, Qcase
+from skopt.space.space import Integer, Real
+from skopt import gp_minimize
+from os.path import isfile
 
 if __name__ == "__main__":
-    totalEpisodesCount = 50
+    totalEpisodesCount = 100
+    seed = 16011984
 
 class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
-    def __init__(self, rng):
+    def __init__(self, rng, computationalTemperature):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
 
         self.epsilon = 0.
         self.actionSelection = self.softmaxActionSelection_computationallySafe
-        self.computationalTemperature = 5e-3  # small more like max, large more like random
+        #self.computationalTemperature = 5e-3  # small more like max, large more like random
+        self.computationalTemperature = computationalTemperature  # small more like max, large more like random
 
         #self.epsilon = 0.01
         #self.actionSelection = self.maxQvalueSelection
@@ -203,7 +208,8 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
         self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
 
         # Visualise the environment grid
-        cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
+        if self.debugging > 0:
+            cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
 
         self.prevGrid = grid
 
@@ -247,16 +253,59 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
 
 
 if __name__ == "__main__":
-    seed = 16011984
-    randomGenerator = np.random.RandomState(seed=seed)
+    def mymain(computationalTemperature):
+        print "computationalTemperature"
+        print computationalTemperature
 
-    agent = QAgent(rng=randomGenerator)
+        randomGenerator = np.random.RandomState(seed=seed)
 
-    agent.run(True, episodes=totalEpisodesCount, draw=True)
+        agent = QAgent(rng=randomGenerator, computationalTemperature=computationalTemperature)
 
-    total_rewards, _ = agent.getRewardInfo()
-    print total_rewards
+        agent.run(True, episodes=totalEpisodesCount, draw=True)
 
-    print agent.storeRewardInfo()
+        total_rewards, _ = agent.getRewardInfo()
+        print total_rewards
 
-    np.save(agent.middlefix + "_bellmanQ", agent.bellmanQ)
+        print agent.storeRewardInfo()
+
+        np.save(agent.middlefix + "_bellmanQ", agent.bellmanQ)
+
+        return np.mean(total_rewards)
+
+
+    def objective(params):  # Here we define the metric we want to minimise
+        (computationalTemperature, ) = params
+
+        meanOfTotalRewards = mymain(computationalTemperature)
+
+        # We want to maximise average accuracy, i.e. minimise minus average accuracy
+        return -meanOfTotalRewards
+
+    space = [Real(1e-4, 1e-1)]
+
+    bestComputationTempFilename = 'best_comp_temp.npy'
+
+    if isfile(bestComputationTempFilename):
+        (bestComputationTemperature, ) = np.load(bestComputationTempFilename)
+    else:
+        #beware this runs more than 15 hours for the many states case
+        res_gp = gp_minimize(
+            func=objective,  # function that we wish to minimise
+            dimensions=space,  # the search space for the hyper-parameters
+            #x0=x0,  # inital values for the hyper-parameters
+            n_calls=25,  # number of times the function will be evaluated
+            random_state=seed,  # random seed
+            n_random_starts=1,  # before we start modelling the optimised function with a GP Regression
+            # model, we want to try a few random choices for the hyper-parameters.
+            kappa=1.9  # trade-off between exploration vs. exploitation.
+        )
+        print "best param"
+        print res_gp.x
+        np.save(bestComputationTempFilename, res_gp.x)
+
+    print "bestComputationTemperature"
+    print bestComputationTemperature
+
+    meanTotalRewards = mymain(bestComputationTemperature)
+    print "meanTotalRewards"
+    print meanTotalRewards
