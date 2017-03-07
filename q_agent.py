@@ -15,7 +15,7 @@ from skopt import gp_minimize
 from os.path import isfile
 
 if __name__ == "__main__":
-    totalEpisodesCount = 100
+    totalEpisodesCount = 1000
     seed = 16011984
 
 class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
@@ -23,18 +23,18 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
 
-        self.epsilon = 0.
-        self.actionSelection = self.softmaxActionSelection_computationallySafe
-        #self.computationalTemperature = 5e-3  # small more like max, large more like random
-        self.computationalTemperature = computationalTemperature  # small more like max, large more like random
-
         #self.epsilon = 0.01
         #self.actionSelection = self.maxQvalueSelection
+        self.epsilon = 0.
+        self.actionSelection = self.softmaxActionSelection_computationallySafe
+
+        #self.computationalTemperature = computationalTemperature  # small more like max, large more like random, i.e 5e-3
+        self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[::-1]
 
         self.debugging = 0 #zero for actual run
         self.gamma = 0.8
         self.initial_state_id = 5184  # run agent with senses to find this out
-        self.middlefix = "boeing"
+        self.middlefix = "boeing_1000"
         #self.initialQ = Qcase.ZERO
 
         def changeQtable(table):
@@ -65,6 +65,10 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
 
         # from sense import Sense
         # self.anotherSensor = Sense(rng)
+
+    @property
+    def computationalTemperature(self):
+        return self.computationalTemperatureSpace[self.episodeCounter-1]
 
     def storeRewardInfo(self):
         # isAnyOfTheBaseClassesShortOrizon = np.any(
@@ -117,18 +121,18 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
         #         probs -= residual
         return np.random.choice(arr, 1, p=probs)[0]
 
-    def softmaxActionSelection(self, stateId):
-        Qs = self.getQbyS(stateId)
-        numerators = np.true_divide(Qs, self.computationalTemperature)
-        exps = np.exp(numerators)
-        summ = np.sum(exps)
-        probs = np.true_divide(exps, summ)
-        if self.debugging > 0:
-            print ["%.3f" % p for p in probs]
-        else:
-            self.probs_debug = ["%.3f" % p for p in probs], ["%.3f" % p for p in Qs]
-        # return self.actionById[np.argmax(probs)]
-        return self.safeRandomChoice(self.getActionsSet(), probs)
+    # def softmaxActionSelection(self, stateId):
+    #     Qs = self.getQbyS(stateId)
+    #     numerators = np.true_divide(Qs, self.computationalTemperature)
+    #     exps = np.exp(numerators)
+    #     summ = np.sum(exps)
+    #     probs = np.true_divide(exps, summ)
+    #     if self.debugging > 0:
+    #         print ["%.3f" % p for p in probs]
+    #     else:
+    #         self.probs_debug = ["%.3f" % p for p in probs], ["%.3f" % p for p in Qs]
+    #     # return self.actionById[np.argmax(probs)]
+    #     return self.safeRandomChoice(self.getActionsSet(), probs)
 
     def softmaxActionSelection_computationallySafe(self, stateId):
         Qs = self.getQbyS(stateId)
@@ -178,6 +182,9 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
         self.nextStateId = None
 
         self.episodeCounter += 1
+
+        if self.debugging == 0:
+            print "computational temperature: %f" % self.computationalTemperature
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -254,8 +261,8 @@ class QAgent(AgentWithBoeingSenses, StoreRewardAgent, Qtable, Agent):
 
 if __name__ == "__main__":
     def mymain(computationalTemperature):
-        print "computationalTemperature"
-        print computationalTemperature
+        #print "computationalTemperature"
+        #print computationalTemperature
 
         randomGenerator = np.random.RandomState(seed=seed)
 
@@ -302,10 +309,12 @@ if __name__ == "__main__":
         print "best param"
         print res_gp.x
         np.save(bestComputationTempFilename, res_gp.x)
+        (bestComputationTemperature,) = res_gp.x
 
     print "bestComputationTemperature"
     print bestComputationTemperature
 
-    meanTotalRewards = mymain(bestComputationTemperature)
+    #meanTotalRewards = mymain(bestComputationTemperature)
+    meanTotalRewards = mymain(None)
     print "meanTotalRewards"
     print meanTotalRewards
