@@ -66,6 +66,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         self.allActionSet = None
         self.prevGrid = None
         self.curGrid = None
+        self.curFeatureVectors = None
+        self.prevFeatureVectors = None
 
         # from sense import Sense
         # self.anotherSensor = Sense(rng)
@@ -106,8 +108,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         # self.curAction = Action.ACCELERATE  # start with the foot on the pedal
         self.curAction = None
 
-        # self.prevGrid = self.curGrid
         self.curGrid = grid
+        self.prevFeatureVectors = self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid) \
+            if self.curFeatureVectors is None else self.curFeatureVectors
 
         self.curReward = None
 
@@ -125,9 +128,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
 
-        Qs = self.getQbyS(
-            self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid)
-        )
+        Qs = self.getQbyS(self.prevFeatureVectors)
 
         # def onProbs(probs):
         #     if self.debugging > 0:
@@ -152,16 +153,16 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
                 representation of the environment
         """
         self.prevGrid = self.curGrid
+        self.curGrid = grid
 
         # print self.anotherSensor.isRoadTurningRight(self.prevGrid, self.curAction, grid)
 
-        self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
+        self.curFeatureVectors = self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid)
+        # self.idByAction[self.curAction]
 
         # Visualise the environment grid
         if self.debugging > 0:
             cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
-
-        self.curGrid = grid
 
     def learn(self):
         """ Performs the learning procudre. It is called after act() and
@@ -170,16 +171,13 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         learningRate = self.getNextLearningRate()
 
         curActionId = self.idByAction[self.curAction]
+        prevFeatureVector = self.prevFeatureVectors[:, curActionId]
 
-        curQ = self.getQsa(self.curStateId, curActionId)
-
-        maxNextQ = np.max(self.getQbyS(self.nextStateId))
-
-        updateValue = curQ + learningRate * (self.curReward + self.gamma * maxNextQ - curQ)
-
-        self.updateQsa(self.curStateId, curActionId, updateValue)
-
-        self.curStateId = self.nextStateId
+        self.updateQsa(learningRate=learningRate,
+                       curReward=self.curReward,
+                       gamma=self.gamma,
+                       curFeatureVectorsForAllActions=self.curFeatureVectors,
+                       prevFeatureVector=prevFeatureVector)
 
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
@@ -187,8 +185,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         if iteration % (100 if self.debugging == 0 else 1) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
-            if self.actionSelection == self.softmaxActionSelection_computationallySafe:
-                print self.probs_debug
+            # if self.actionSelection == self.softmaxActionSelection_computationallySafe:
+            #     print self.probs_debug
             print
 
         if self.debugging > 0 and learn:
