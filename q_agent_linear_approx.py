@@ -11,15 +11,13 @@ from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 # from q_dict import Qdict
 from q_table import Qcase
 from q_linear_approx import Q_LinearApprox
-from skopt.space.space import Integer, Real
-from skopt import gp_minimize
 from os.path import isfile
 from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 
 if __name__ == "__main__":
     totalEpisodesCount = 1
     seed = 16011984
-
+    debugging = 0
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
     def __init__(self, rng, computationalTemperature=None):
@@ -33,7 +31,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
                                              ::-1] if computationalTemperature is None else \
             np.repeat(computationalTemperature, totalEpisodesCount)
 
-        self.debugging = 0  # zero for actual run
+        self.debugging = debugging  # zero for actual run
         self.gamma = 0.8
 
         self.middlefix = "linear_approx_take_one"
@@ -50,27 +48,24 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         self.rng = rng
 
+        self.allActionSet = None
         # super(QLinearApproxAgent, self).__init__(rng, howFar=10)
         super(QLinearApproxAgent, self).__init__(rng)
-
-        self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
-        self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
-
-        print [(k, Action.toString(v)) for k, v in self.actionById.iteritems()]
 
         self.total_reward = None
         self.cur_t = None
         self.curAction = None
         self.curReward = None
         self.episodeCounter = 0
-        self.allActionSet = None
         self.prevGrid = None
         self.curGrid = None
         self.curFeatureVectors = None
         self.prevFeatureVectors = None
 
-        # from sense import Sense
-        # self.anotherSensor = Sense(rng)
+        self.actionById = dict((k, v) for k, v in enumerate(self.getActionsSet()))
+        self.idByAction = dict((v, k) for k, v in self.actionById.iteritems())
+
+        print [(k, Action.toString(v)) for k, v in self.actionById.iteritems()]
 
     def run(self, learn, episodes=1, draw=False):
         super(QLinearApproxAgent, self).run(learn, episodes, draw)
@@ -200,6 +195,10 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
 
 if __name__ == "__main__":
+    if debugging == 0:
+        from skopt.space.space import Integer, Real
+        from skopt import gp_minimize
+
     def mymain(computationalTemperature=None):
         randomGenerator = np.random.RandomState(seed=seed)
 
