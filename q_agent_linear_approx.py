@@ -14,24 +14,23 @@ from q_linear_approx import Q_LinearApprox
 from skopt.space.space import Integer, Real
 from skopt import gp_minimize
 from os.path import isfile
+from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 
 if __name__ == "__main__":
-    totalEpisodesCount = 100
+    totalEpisodesCount = 1
     seed = 16011984
 
 
-class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox, Agent):
-    def __init__(self, rng, computationalTemperature = None):
+class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
+    def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
 
         self.epsilon = 0.01
-        self.actionSelection = self.maxQvalueSelection
-        # self.epsilon = 0.
-        # self.actionSelection = self.softmaxActionSelection_computationallySafe
 
         # small more like max, large more like random, i.e 5e-3
-        self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[::-1] if computationalTemperature is None else \
+        self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[
+                                             ::-1] if computationalTemperature is None else \
             np.repeat(computationalTemperature, totalEpisodesCount)
 
         self.debugging = 0  # zero for actual run
@@ -73,10 +72,6 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         # from sense import Sense
         # self.anotherSensor = Sense(rng)
 
-    @property
-    def computationalTemperature(self):
-        return self.computationalTemperatureSpace[self.episodeCounter - 1]
-
     def run(self, learn, episodes=1, draw=False):
         super(QLinearApproxAgent, self).run(learn, episodes, draw)
         # do something at the end of the run
@@ -102,64 +97,6 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         # by episode
         return 1. / np.power(self.episodeCounter, self.lr_p_param)
 
-    def maxQvalueSelection(self, stateId):
-        return self.actionById[
-            np.argmax(self.getQbyS(stateId))
-        ]
-
-    @staticmethod
-    def safeRandomChoice(arr, probs):
-        # uncomment if you have a problem with the probs
-        # sumP = np.sum(probs)
-        # if (1. - sumP) ** 2 > 1e-8:
-        #     residual = np.abs(1. - sumP) / len(probs)
-        #     if sumP < 1:
-        #         probs += residual
-        #     else:
-        #         probs -= residual
-        return np.random.choice(arr, 1, p=probs)[0]
-
-    # def softmaxActionSelection(self, stateId):
-    #     Qs = self.getQbyS(stateId)
-    #     numerators = np.true_divide(Qs, self.computationalTemperature)
-    #     exps = np.exp(numerators)
-    #     summ = np.sum(exps)
-    #     probs = np.true_divide(exps, summ)
-    #     if self.debugging > 0:
-    #         print ["%.3f" % p for p in probs]
-    #     else:
-    #         self.probs_debug = ["%.3f" % p for p in probs], ["%.3f" % p for p in Qs]
-    #     # return self.actionById[np.argmax(probs)]
-    #     return self.safeRandomChoice(self.getActionsSet(), probs)
-
-    def softmaxActionSelection_computationallySafe(self, stateId):
-        Qs = self.getQbyS(stateId)
-        numerators = np.true_divide(Qs, self.computationalTemperature)
-        repeats = np.tile(numerators[np.newaxis], (len(numerators), 1))
-        removes = numerators[np.newaxis].T
-        denoms = repeats - removes
-        expDenoms = np.exp(denoms)
-        sumDenoms = np.sum(expDenoms, axis=1)
-        probs = 1. / sumDenoms
-        if self.debugging > 0:
-            print ["%.3f" % p for p in probs]
-        else:
-            self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
-        # return self.actionById[np.argmax(probs)]
-        return self.safeRandomChoice(self.getActionsSet(), probs)
-
-    def tryRandomActionOr(self, epsilon, callback):
-        assert 0. <= epsilon <= 1.
-        epsilon = float(epsilon)
-
-        if self.rng.rand() < epsilon:
-            return self.getRandomAction()
-        else:
-            return callback()
-
-    def getRandomAction(self):
-        return self.actionById[self.rng.randint(0, len(self.getActionsSet()))]
-
     def initialise(self, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
         super(QLinearApproxAgent, self).initialise(grid)
@@ -177,8 +114,8 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
 
         self.episodeCounter += 1
 
-        if self.debugging == 0:
-            print "computational temperature: %f" % self.computationalTemperature
+        # if self.debugging == 0:
+        #     print "computational temperature: %f" % self.computationalTemperature
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -189,7 +126,17 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
 
-        self.curAction = self.tryRandomActionOr(self.epsilon, lambda: self.actionSelection(self.curStateId))
+        Qs = self.getQbyS(self.curStateId)
+
+        def onProbs(probs):
+            if self.debugging > 0:
+                print ["%.3f" % p for p in probs]
+            else:
+                self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
+
+        #self.curAction = self.actionSelection(Qs, computationalTemperature=self.computationalTemperature, onProbs=onProbs)
+        self.curAction = self.actionSelection(Qs)
+
 
         self.curReward = self.move(self.curAction)
         # self.curReward = -0.01 if self.curReward == 0 else self.curReward
@@ -255,9 +202,6 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
 
 if __name__ == "__main__":
     def mymain(computationalTemperature=None):
-        # print "computationalTemperature"
-        # print computationalTemperature
-
         randomGenerator = np.random.RandomState(seed=seed)
 
         agent = QLinearApproxAgent(rng=randomGenerator, computationalTemperature=computationalTemperature)
