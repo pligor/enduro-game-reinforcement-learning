@@ -5,7 +5,7 @@ from enduro.agent import Agent
 from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
-from store_reward_agent import StoreRewardAgent
+from store_reward_agent import SaveRewardAgent
 from agent_with_boeing_senses import AgentWithBoeingSenses
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 # from q_dict import Qdict
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     seed = 16011984
 
 
-class QLinearApproxAgent(AgentWithBoeingSenses, StoreRewardAgent, Q_LinearApprox, Agent):
+class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox, Agent):
     def __init__(self, rng, computationalTemperature = None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
@@ -38,7 +38,8 @@ class QLinearApproxAgent(AgentWithBoeingSenses, StoreRewardAgent, Q_LinearApprox
         self.gamma = 0.8
         self.initial_state_id = 5184  # run agent with senses to find this out
 
-        self.middlefix = "stay_centre_road"
+        self.middlefix = "linear_approx_take_one"
+        self.rewardsFilename = "QLinearApproxAgent_%s_data" % self.middlefix
 
         self.initialTheta = Qcase.ZERO
         # def changeQtable(table):
@@ -75,12 +76,6 @@ class QLinearApproxAgent(AgentWithBoeingSenses, StoreRewardAgent, Q_LinearApprox
     @property
     def computationalTemperature(self):
         return self.computationalTemperatureSpace[self.episodeCounter - 1]
-
-    def storeRewardInfo(self):
-        totalRewards, rewardStreams = self.getRewardInfo()
-        filename = "QLinearApproxAgent_%s_data" % self.middlefix
-        np.savez(filename, totalRewards, rewardStreams)
-        return filename
 
     def run(self, learn, episodes=1, draw=False):
         super(QLinearApproxAgent, self).run(learn, episodes, draw)
