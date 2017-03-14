@@ -7,27 +7,35 @@ class Qcase(object):
     def __init__(self):
         super(Qcase, self).__init__()
 
-
 class Q_LinearApprox(object):
     def __init__(self):
         super(Q_LinearApprox, self).__init__()
-        assert hasattr(self, "getActionsSet")
-        assert hasattr(self, "rng")
 
-        self.featureLen = 2 #TODO make it parametric
+        if hasattr(self, "featureLen"):
+            if hasattr(self, "initialTheta"):
+                if self.initialTheta == Qcase.ZERO:
+                    self.thetaVector = np.zeros(self.featureLen)
 
-        if (not hasattr(self, "initialTheta")) or self.initialTheta == Qcase.ZERO:
-            self.thetaVector = np.zeros(self.featureLen)
+                elif self.initialTheta == Qcase.RANDOM:
+                    if hasattr(self, "rng"):
+                        self.thetaVector = self.rng.rand(self.featureLen)
+                    else:
+                        raise AssertionError
 
-        elif self.initialTheta == Qcase.RANDOM:
-            self.thetaVector = self.rng.rand(self.featureLen)
-
+                else:
+                    self.thetaVector = self.initialTheta(
+                        np.zeros(self.featureLen)
+                    )
+            else:
+                self.thetaVector = np.zeros(self.featureLen)
         else:
-            self.thetaVector = self.initialTheta(
-                np.zeros(self.featureLen)
-            )
+            raise AssertionError
 
-        self._actionsLen = len(self.getActionsSet())
+        if hasattr(self, "getActionsSet"):
+            self._actionsLen = len(self.getActionsSet())
+        else:
+            raise AssertionError
+
         self._thetaVecLen = len(self.thetaVector)
 
     def updateQsa(self, learningRate, nextReward, gamma, nextFeatureVectors, curFeatureVector):

@@ -6,7 +6,7 @@ from enduro.action import Action
 from enduro.state import EnvironmentState
 import numpy as np
 from store_reward_agent import SaveRewardAgent
-from agent_with_boeing_senses import AgentWithBoeingSenses
+from feature_senses import FeatureSenses
 from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
 # from q_dict import Qdict
 from q_table import Qcase
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     seed = 16011984
 
 
-class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
     def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
@@ -35,12 +35,12 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
 
         self.debugging = 0  # zero for actual run
         self.gamma = 0.8
-        self.initial_state_id = 5184  # run agent with senses to find this out
 
         self.middlefix = "linear_approx_take_one"
         self.rewardsFilename = "QLinearApproxAgent_%s_data" % self.middlefix
 
-        self.initialTheta = Qcase.ZERO
+        self.initialTheta = Qcase.RANDOM
+
         # def changeQtable(table):
         #     table[:, 0] = 10
         #     # table[:, 1:4] = 0
@@ -59,15 +59,13 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         print [(k, Action.toString(v)) for k, v in self.actionById.iteritems()]
 
         self.total_reward = None
-        self.curStateId = None
         self.cur_t = None
         self.curAction = None
-        self.prevGrid = None
         self.curReward = None
-        self.nextStateId = None
         self.episodeCounter = 0
-
         self.allActionSet = None
+        self.prevGrid = None
+        self.curGrid = None
 
         # from sense import Sense
         # self.anotherSensor = Sense(rng)
@@ -103,14 +101,15 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
 
         self.total_reward = 0  # Reset the total reward for the episode
 
-        self.curStateId = self.initial_state_id
-
         self.cur_t = 1
 
+        # self.curAction = Action.ACCELERATE  # start with the foot on the pedal
         self.curAction = None
-        self.prevGrid = grid
+
+        # self.prevGrid = self.curGrid
+        self.curGrid = grid
+
         self.curReward = None
-        self.nextStateId = None
 
         self.episodeCounter += 1
 
@@ -126,17 +125,18 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         # i.e. Action.LEFT, Action.RIGHT, Action.ACCELERATE or Action.BREAK
         # Do not use plain integers between 0 - 3 as it will not work
 
-        Qs = self.getQbyS(self.curStateId)
+        Qs = self.getQbyS(
+            self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid)
+        )
 
-        def onProbs(probs):
-            if self.debugging > 0:
-                print ["%.3f" % p for p in probs]
-            else:
-                self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
+        # def onProbs(probs):
+        #     if self.debugging > 0:
+        #         print ["%.3f" % p for p in probs]
+        #     else:
+        #         self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
+        # self.curAction = self.actionSelection(Qs, computationalTemperature=self.computationalTemperature, onProbs=onProbs)
 
-        #self.curAction = self.actionSelection(Qs, computationalTemperature=self.computationalTemperature, onProbs=onProbs)
         self.curAction = self.actionSelection(Qs)
-
 
         self.curReward = self.move(self.curAction)
         # self.curReward = -0.01 if self.curReward == 0 else self.curReward
@@ -151,6 +151,8 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         gird -- 2-dimensional numpy array containing the latest grid
                 representation of the environment
         """
+        self.prevGrid = self.curGrid
+
         # print self.anotherSensor.isRoadTurningRight(self.prevGrid, self.curAction, grid)
 
         self.nextStateId = self.getStateIdBySensing(self.prevGrid, self.curAction, grid)
@@ -159,7 +161,7 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         if self.debugging > 0:
             cv2.imshow("Environment Grid", EnvironmentState.draw(grid))
 
-        self.prevGrid = grid
+        self.curGrid = grid
 
     def learn(self):
         """ Performs the learning procudre. It is called after act() and
@@ -185,7 +187,6 @@ class QLinearApproxAgent(AgentWithBoeingSenses, SaveRewardAgent, Q_LinearApprox,
         if iteration % (100 if self.debugging == 0 else 1) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
-            print "next state id: %d" % self.nextStateId
             if self.actionSelection == self.softmaxActionSelection_computationallySafe:
                 print self.probs_debug
             print
