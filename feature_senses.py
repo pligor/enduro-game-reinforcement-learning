@@ -5,8 +5,13 @@ from sensor import Sensor
 
 class FeatureSenses(object):
     def __init__(self, rng):
+        self.nonLinearitiesEnabled = False
+
         originalFeatureLen = 2
-        self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
+        if self.nonLinearitiesEnabled:
+            self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
+        else:
+            self.featureLen = originalFeatureLen
 
         super(FeatureSenses, self).__init__()
         self.sensor = Sensor(rng)
@@ -20,14 +25,6 @@ class FeatureSenses(object):
             raise AssertionError
 
     def stayingInTheCentreOfTheRoad(self, grid, action):
-        # detect if opponents are found on the left and the action is left then this should be a small value
-        # if opponents are found on the right and the action is right then small value
-        # break should have a smaller impact, noop smaller
-        # accelerate is preferred, the opposite might be also preferred
-
-        # road is turning left by some degree, or right. If road is turning left, left action should be
-        # preferred. The rest in that order: accelerate, noop, break, right
-        # the same for if road is turning right
         return (
             self.sensor.distanceFromCentre(grid, action),
             self.sensor.opponentsBeside(grid, action)
@@ -70,8 +67,9 @@ class FeatureSenses(object):
                 opponentsBeside,
             ])
 
-            featureVector = np.concatenate((featureVector, self.multiplyCombinations(featureVector)))
-            assert len(featureVector) == self.featureLen
+            if self.nonLinearitiesEnabled:
+                featureVector = np.concatenate((featureVector, self.multiplyCombinations(featureVector)))
+                assert len(featureVector) == self.featureLen
 
             return featureVector
 
