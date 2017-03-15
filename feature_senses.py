@@ -5,7 +5,8 @@ from sensor import Sensor
 
 class FeatureSenses(object):
     def __init__(self, rng):
-        self.featureLen = 1
+        originalFeatureLen = 2
+        self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
 
         super(FeatureSenses, self).__init__()
         self.sensor = Sensor(rng)
@@ -27,14 +28,17 @@ class FeatureSenses(object):
         # road is turning left by some degree, or right. If road is turning left, left action should be
         # preferred. The rest in that order: accelerate, noop, break, right
         # the same for if road is turning right
-        return (self.sensor.distanceFromCentre(grid, action), )
+        return (
+            self.sensor.distanceFromCentre(grid, action),
+            self.sensor.opponentsBeside(grid, action)
+        )
 
     def getFeatureVector(self, prevGrid, action, curGrid):
         if prevGrid is None:
             return np.zeros(self.featureLen)
         else:
-            (distanceFromCentre,) = self.stayingInTheCentreOfTheRoad(grid=curGrid,
-                                                                     action=action)  # TODO or prevGrid, not sure..
+            (distanceFromCentre, opponentsBeside) = self.stayingInTheCentreOfTheRoad(grid=curGrid,
+                                                                                     action=action)  # TODO or prevGrid, not sure..
             # roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
             # extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
             #
@@ -63,9 +67,55 @@ class FeatureSenses(object):
 
             featureVector = np.array([
                 distanceFromCentre,
+                opponentsBeside,
             ])
 
+            featureVector = np.concatenate((featureVector, self.multiplyCombinations(featureVector)))
+            assert len(featureVector) == self.featureLen
+
             return featureVector
+
+    @staticmethod
+    def countCombinations(originalFeatureLen):
+        return ((originalFeatureLen ** 2) / 2) - (originalFeatureLen / 2)
+
+    @staticmethod
+    def multiplyCombinations(arr):
+        arr = np.array(arr)  # make sure it is numpy array
+        combs = FeatureSenses.takeCombinations(len(arr))
+
+        products = []
+        for comb in combs:
+            product = 1
+            for elem in arr[comb]:
+                product *= elem
+            products.append(product)
+
+        return np.array(products)
+
+    @staticmethod
+    def takeCombinations(arrLen):
+        """
+        usage:
+        arr = np.array([1, 2, 3])
+
+        combs = takeCombinations(arr)
+        for comb in combs:
+            elems = arr[comb]
+            print elems
+
+            product = 1
+            for elem in elems:
+                product *= elem
+            print product
+        :param arrLen:
+        :return:
+        """
+        inds = range(arrLen)
+        couples = np.array(
+            [tuple(np.sort(tpl)) for tpl in np.array(np.meshgrid(inds, inds)).T.reshape(-1, 2) if tpl[0] != tpl[1]])
+        combinations = np.vstack({tuple(row) for row in couples})
+        return combinations
 
     @staticmethod
     def __countToTextClass(count):
