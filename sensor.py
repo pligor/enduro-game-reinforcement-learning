@@ -1,14 +1,37 @@
+from __future__ import division
+
 import numpy as np
 from enduro.action import Action
 from road_category import RoadCategory
 from extreme_position import ExtremePosition
 from how_many_opponents import HowManyOpponents
+from sense import Sense
 
-class Sense(object):
-    def __init__(self, rng, gridLength = 11, gridWidth = 10):
-        self.rng = rng
-        self.gridLength = gridLength
-        self.gridWidth = gridWidth
+class Sensor(Sense):
+    def __init__(self, rng):
+        super(Sensor, self).__init__(rng)
+        self.roadLength = self.gridLength + 1
+        self.roadWidth = self.gridWidth + 1
+
+    def distanceFromCentre(self, grid, action):
+        # being in the centre [4 or 5 position] we need the highest value, the lowest value at the edges
+        # 4.5 - 0 = 4.5, 4.5 - 9 = -4.5, while 4.5 - 4 = 0.5 and 4.5 - 5 = -0.5
+        # if negative means we are on the right, action Left should bring it a larger value, action Right a smaller
+        # positive means we are on the left, action Right larger value, action Left smaller
+        # action accelerate or break or noop are neutral
+        carPos = self.getOurCarPos(grid)
+        middlePos = (self.gridWidth - 1) / 2.
+        distance = middlePos - carPos
+        areWeOnTheRight =  distance < 0
+        areWeOnTheLeft = not areWeOnTheRight
+        if (areWeOnTheRight and action == Action.RIGHT) or ( areWeOnTheLeft and action == Action.LEFT):
+            return distance / 2.
+        elif (areWeOnTheRight and action == Action.LEFT) or (areWeOnTheLeft and action == Action.RIGHT):
+            return distance * 2.
+        else:
+            return distance
+
+    ####################################################################################################################
 
     def generateGridWithOneCarInFront(self):
         sampleGrid = np.zeros((self.gridLength, self.gridWidth))
@@ -162,15 +185,6 @@ class Sense(object):
 
         # return self.isOpponentInFront(newGrid, shift=1) and self.isOpponentApproaching(camPos, prevGrid, newGrid)
         return self.isOpponentApproaching(camPos, prevGrid, newGrid)
-
-    @staticmethod
-    def getOurCarPos(grid):
-        ourCarPos = np.argwhere(grid[0] == 2)
-
-        for i in range(len(ourCarPos.shape)):
-            ourCarPos = ourCarPos[0]
-
-        return ourCarPos
 
     def isOpponentAtImmediate(self, grid, right_boolean):
         ourCarPos = self.getOurCarPos(grid)

@@ -106,8 +106,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         self.curAction = None
 
         self.curGrid = grid
-        self.prevFeatureVectors = self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid) \
-            if self.curFeatureVectors is None else self.curFeatureVectors
+        self.prevFeatureVectors = self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid)
 
         self.curReward = None
 
@@ -176,6 +175,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
                        curFeatureVectorsForAllActions=self.curFeatureVectors,
                        prevFeatureVector=prevFeatureVector)
 
+        self.prevFeatureVectors = self.curFeatureVectors
+
     def callback(self, learn, episode, iteration):
         """ Called at the end of each timestep for reporting/debugging purposes.
         """
@@ -184,6 +185,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             print Action.toString(self.curAction)
             # if self.actionSelection == self.softmaxActionSelection_computationallySafe:
             #     print self.probs_debug
+            print self.prevFeatureVectors
+            print self.curFeatureVectors
             print
 
         if self.debugging > 0 and learn:
