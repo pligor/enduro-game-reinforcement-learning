@@ -59,8 +59,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         self.curAction = None
         self.curReward = None
         self.episodeCounter = 0
-        self.prevGrid = None
-        self.curGrid = None
+        self.__prevEnvironment = None
+        self.__curEnvironment = None
         self.curFeatureVectors = None
         self.prevFeatureVectors = None
 
@@ -105,8 +105,11 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         # self.curAction = Action.ACCELERATE  # start with the foot on the pedal
         self.curAction = None
 
-        self.curGrid = grid
-        self.prevFeatureVectors = self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid)
+        self.__curEnvironment = {
+            "road": road, "cars": cars, "speed": speed, "grid": grid
+        }
+        self.prevFeatureVectors = self.getFeatureVectorsForAllActions(prevEnv=self.__prevEnvironment,
+                                                                      curEnv=self.__curEnvironment)
 
         self.curReward = None
 
@@ -148,12 +151,13 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         gird -- 2-dimensional numpy array containing the latest grid
                 representation of the environment
         """
-        self.prevGrid = self.curGrid
-        self.curGrid = grid
+        self.__prevEnvironment = self.__curEnvironment
+        self.__curEnvironment = {
+            "road": road, "cars": cars, "speed": speed, "grid": grid
+        }
 
-        # print self.anotherSensor.isRoadTurningRight(self.prevGrid, self.curAction, grid)
-
-        self.curFeatureVectors = self.getFeatureVectorsForAllActions(prevGrid=self.prevGrid, curGrid=self.curGrid)
+        self.curFeatureVectors = self.getFeatureVectorsForAllActions(prevEnv=self.__prevEnvironment,
+                                                                     curEnv=self.__curEnvironment)
         # self.idByAction[self.curAction]
 
         # Visualise the environment grid

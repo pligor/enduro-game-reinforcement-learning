@@ -16,10 +16,10 @@ class FeatureSenses(object):
         super(FeatureSenses, self).__init__()
         self.sensor = Sensor(rng)
 
-    def getFeatureVectorsForAllActions(self, prevGrid, curGrid):
+    def getFeatureVectorsForAllActions(self, prevEnv, curEnv):
         if hasattr(self, "getActionsSet"):
             return np.array(
-                [self.getFeatureVector(prevGrid=prevGrid, action=curAction, curGrid=curGrid) for curAction in
+                [self.__getFeatureVector(prevEnv=prevEnv, action=curAction, curEnv=curEnv) for curAction in
                  self.getActionsSet()]).T
         else:
             raise AssertionError
@@ -30,12 +30,13 @@ class FeatureSenses(object):
             self.sensor.opponentsBeside(grid, action)
         )
 
-    def getFeatureVector(self, prevGrid, action, curGrid):
-        if prevGrid is None:
+    def __getFeatureVector(self, prevEnv, action, curEnv):
+        if prevEnv is None:
             return np.zeros(self.featureLen)
         else:
-            (distanceFromCentre, opponentsBeside) = self.stayingInTheCentreOfTheRoad(grid=curGrid,
-                                                                                     action=action)  # TODO or prevGrid, not sure..
+            # according to theory the state corresponds to the grid AFTER the action is taken
+            (distanceFromCentre, opponentsBeside) = self.stayingInTheCentreOfTheRoad(grid=curEnv['grid'],
+                                                                                     action=action)
             # roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
             # extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
             #
