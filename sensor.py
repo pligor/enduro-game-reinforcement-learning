@@ -13,7 +13,7 @@ class Sensor(Sense):
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
 
-    def distanceFromCentre(self, grid, action):
+    def distanceFromCentre(self, grid, action, factor = 2.):
         # being in the centre [4 or 5 position] we need the highest value, the lowest value at the edges
         # 4.5 - 0 = 4.5, 4.5 - 9 = -4.5, while 4.5 - 4 = 0.5 and 4.5 - 5 = -0.5
         # if negative means we are on the right, action Left should bring it a larger value, action Right a smaller
@@ -24,10 +24,13 @@ class Sensor(Sense):
         distance = middlePos - carPos
         areWeOnTheRight =  distance < 0
         areWeOnTheLeft = not areWeOnTheRight
+
+        distance = distance**2
+
         if (areWeOnTheRight and action == Action.RIGHT) or ( areWeOnTheLeft and action == Action.LEFT):
-            return distance / 2.
+            return distance / factor
         elif (areWeOnTheRight and action == Action.LEFT) or (areWeOnTheLeft and action == Action.RIGHT):
-            return distance * 2.
+            return distance * factor
         else:
             return distance
 
