@@ -17,7 +17,10 @@ from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 if __name__ == "__main__":
     totalEpisodesCount = 1
     seed = 16011984
-    debugging = 0
+    debugging = 100
+    if debugging == 0:
+        from skopt.space.space import Integer, Real
+        from skopt import gp_minimize
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
     def __init__(self, rng, computationalTemperature=None):
@@ -195,10 +198,6 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
 
 if __name__ == "__main__":
-    if debugging == 0:
-        from skopt.space.space import Integer, Real
-        from skopt import gp_minimize
-
     def mymain(computationalTemperature=None):
         randomGenerator = np.random.RandomState(seed=seed)
 

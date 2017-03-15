@@ -55,7 +55,7 @@ class StateExtractor:
         if draw:
             self.__draw(image, scale)
 
-        return (self._state_grid, image)
+        return (self._road_grid, self._cars, self._state_grid, image)
 
     def __getScreenImage(self):
         [w, h] = self._ale.getScreenDims()
@@ -197,7 +197,7 @@ class StateExtractor:
             (pos_y, pos_x) = getCell(center(c))
             pos_y = len(grid) - pos_y - 2
 
-            # Colision ocurred
+            # Collision occurred
             while state[pos_y, pos_x] == 2:
                 pos_y += 1
 
