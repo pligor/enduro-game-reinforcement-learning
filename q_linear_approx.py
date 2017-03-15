@@ -1,11 +1,6 @@
 import numpy as np
 
-class Qcase(object):
-    RANDOM = "random"
-    ZERO = "zero"
-
-    def __init__(self):
-        super(Qcase, self).__init__()
+from q_case import Qcase
 
 class Q_LinearApprox(object):
     def __init__(self):

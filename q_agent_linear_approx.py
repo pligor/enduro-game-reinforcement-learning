@@ -7,9 +7,7 @@ from enduro.state import EnvironmentState
 import numpy as np
 from store_reward_agent import SaveRewardAgent
 from feature_senses import FeatureSenses
-from agent_with_var_orizon_senses import AgentWithVarOrizonSenses
-# from q_dict import Qdict
-from q_table import Qcase
+from q_case import Qcase
 from q_linear_approx import Q_LinearApprox
 from os.path import isfile
 from action_selection import EgreedyActionSelection, SoftmaxActionSelection
@@ -21,6 +19,7 @@ if __name__ == "__main__":
     if debugging == 0:
         from skopt.space.space import Integer, Real
         from skopt import gp_minimize
+
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
     def __init__(self, rng, computationalTemperature=None):
@@ -95,9 +94,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         # by episode
         return 1. / np.power(self.episodeCounter, self.lr_p_param)
 
-    def initialise(self, grid):
+    def initialise(self, road, cars, speed, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
-        super(QLinearApproxAgent, self).initialise(grid)
+        super(QLinearApproxAgent, self).initialise(road=road, cars=cars, speed=speed, grid=grid)
 
         self.total_reward = 0  # Reset the total reward for the episode
 
@@ -144,7 +143,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         super(QLinearApproxAgent, self).act()
 
-    def sense(self, grid):
+    def sense(self, road, cars, speed, grid):
         """ Constructs the next state from sensory signals.
 
         gird -- 2-dimensional numpy array containing the latest grid

@@ -12,7 +12,7 @@ class StoreRewardAgent(object):
         # return np.array(self.totalRewards), np.array(self.rewardStreams)
         return self.totalRewards, self.rewardStreams
 
-    def initialise(self, grid):
+    def initialise(self, road, cars, speed, grid):
         # do not call super here
         # print "initialize of store reward"
 
