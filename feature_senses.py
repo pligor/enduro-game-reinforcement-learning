@@ -1,13 +1,16 @@
+from __future__ import division
+
 import numpy as np
 from how_many_opponents_discrete import HowManyOpponentsDiscrete
 from sensor import Sensor
+from enduro.action import Action
 
 
 class FeatureSenses(object):
     def __init__(self, rng):
         self.nonLinearitiesEnabled = False
 
-        originalFeatureLen = 3
+        originalFeatureLen = 4
         if self.nonLinearitiesEnabled:
             self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
         else:
@@ -23,6 +26,43 @@ class FeatureSenses(object):
                  self.getActionsSet()]).T
         else:
             raise AssertionError
+
+    def collisionsShouldBeAvoided(self):
+        # speed dependent, for high speeds
+        # road dependent, turning left or right
+        # use cars positions and predict next move
+
+        # if road is turning right then car position is going to move diagonally
+        # are we within the predicted range? If yes then we should turn outside of the range
+        # if all cars block us then we should brake
+        # the higher the speed the higher the need to turn and the further away we look at the road
+        return
+
+    @staticmethod
+    def movingFasterResultsInPassingMoreCars(speed, action,
+                                             averageSpeed=20,
+                                             rbfSmoothness = 700,
+                                             factors = (0.1, 0.5, 0.9)):
+        # Consider speed itself to give some value, for example low speeds are really bad, but also high speeds are bad
+        # (not as bad though), and of course differentiate per action
+
+        rbfFunc = lambda x: np.exp(-((x - averageSpeed) ** 2) / rbfSmoothness)
+
+        speedFactor = rbfFunc(speed)
+
+        isSlowerThanAverage = speed < averageSpeed
+
+        preferredAction = Action.ACCELERATE if isSlowerThanAverage else Action.BRAKE
+        notPreferredAction = Action.BRAKE if isSlowerThanAverage else Action.ACCELERATE
+
+        if action == preferredAction:
+            return speedFactor * factors[2]
+        elif action == Action.NOOP:
+            return speedFactor * factors[1]
+        elif action == notPreferredAction:
+            return speedFactor * factors[0]
+        else:
+            return 0
 
     def stayingInTheCentreOfTheRoad(self, grid, action, road):
         return (
@@ -41,6 +81,8 @@ class FeatureSenses(object):
                 road=curEnv['road'],
                 action=action
             )
+
+            howFastOurCarMoves = self.movingFasterResultsInPassingMoreCars(curEnv['speed'], action=action)
             # roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
             # extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
             #
@@ -54,23 +96,12 @@ class FeatureSenses(object):
             #     self.sensor.countOppsVarLen(newGrid, left_boolean=False, howFar=11, startFrom=6))
             #
             # areOpponentsSurpassing = self.sensor.doesOpponentSurpasses(prevGrid, newGrid)
-            # isOpponentAtImmediateLeft = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=False)
-            # isOpponentAtImmediateRight = self.sensor.isOpponentAtImmediate(newGrid, right_boolean=True)
-            #
-            # featureVector = np.array((roadCateg,
-            #                           extremePos,
-            #                           oppNearLeft,
-            #                           oppNearRight,
-            #                           oppFarLeft,
-            #                           oppFarRight,
-            #                           areOpponentsSurpassing,
-            #                           isOpponentAtImmediateLeft,
-            #                           isOpponentAtImmediateRight))
 
             featureVector = np.array([
                 distanceFromCentre,
                 opponentsBeside,
                 howMuchRoadTurning,
+                howFastOurCarMoves
             ])
 
             if self.nonLinearitiesEnabled:
@@ -81,7 +112,7 @@ class FeatureSenses(object):
 
     @staticmethod
     def countCombinations(originalFeatureLen):
-        return ((originalFeatureLen ** 2) / 2) - (originalFeatureLen / 2)
+        return int(((originalFeatureLen ** 2) / 2) - (originalFeatureLen / 2))
 
     @staticmethod
     def multiplyCombinations(arr):
