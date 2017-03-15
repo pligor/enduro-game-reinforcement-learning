@@ -14,7 +14,7 @@ class Sensor(Sense):
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
 
-    def howMuchRoadTurning(self, road, action, pixelsThreshold = 10, factors = (0.1, 1, 2, 3, 10)):
+    def howMuchRoadTurning(self, road, action, pixelsThreshold = 10, factors = (0.01, 0.1, 0.2, 0.3, 1)):
         # road is turning left by some degree, or right. If road is turning left, left action should be
         # preferred. The rest in that order: accelerate, noop, brake, right
         # the same for if road is turning right
@@ -61,7 +61,7 @@ class Sensor(Sense):
 
         raise AssertionError  #invalid action detected
 
-    def opponentsBeside(self, grid, action, factors = (0.1, 1, 2, 5, 9)):
+    def opponentsBeside(self, grid, action, factors = (0.01, 0.1, 0.2, 0.5, 0.9)):
         # detect if opponents are found on the left and the action is left then this should be a small value
         # if opponents are found on the right and the action is right then small value
         # brake should have a smaller impact, noop smaller

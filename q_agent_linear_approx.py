@@ -34,7 +34,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             np.repeat(computationalTemperature, totalEpisodesCount)
 
         self.debugging = debugging  # zero for actual run
-        self.gamma = 0.8
+        self.gamma = 0.9
 
         self.middlefix = "linear_approx_take_one"
         self.rewardsFilename = "QLinearApproxAgent_%s_data" % self.middlefix
