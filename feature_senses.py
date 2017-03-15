@@ -7,7 +7,7 @@ class FeatureSenses(object):
     def __init__(self, rng):
         self.nonLinearitiesEnabled = False
 
-        originalFeatureLen = 2
+        originalFeatureLen = 3
         if self.nonLinearitiesEnabled:
             self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
         else:
@@ -24,10 +24,11 @@ class FeatureSenses(object):
         else:
             raise AssertionError
 
-    def stayingInTheCentreOfTheRoad(self, grid, action):
+    def stayingInTheCentreOfTheRoad(self, grid, action, road):
         return (
-            self.sensor.distanceFromCentre(grid, action),
-            self.sensor.opponentsBeside(grid, action)
+            self.sensor.distanceFromCentre(grid=grid, action=action),
+            self.sensor.opponentsBeside(grid=grid, action=action),
+            self.sensor.howMuchRoadTurning(road=road, action=action)
         )
 
     def __getFeatureVector(self, prevEnv, action, curEnv):
@@ -35,8 +36,11 @@ class FeatureSenses(object):
             return np.zeros(self.featureLen)
         else:
             # according to theory the state corresponds to the grid AFTER the action is taken
-            (distanceFromCentre, opponentsBeside) = self.stayingInTheCentreOfTheRoad(grid=curEnv['grid'],
-                                                                                     action=action)
+            (distanceFromCentre, opponentsBeside, howMuchRoadTurning) = self.stayingInTheCentreOfTheRoad(
+                grid=curEnv['grid'],
+                road=curEnv['road'],
+                action=action
+            )
             # roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
             # extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
             #
@@ -66,6 +70,7 @@ class FeatureSenses(object):
             featureVector = np.array([
                 distanceFromCentre,
                 opponentsBeside,
+                howMuchRoadTurning,
             ])
 
             if self.nonLinearitiesEnabled:

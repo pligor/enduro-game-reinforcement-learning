@@ -61,7 +61,7 @@ class FunctionApproximationAgent(Agent):
         """
         road = np.array(road)
 
-        print road.shape
+        print road.shape #12, 11, 2
 
         for row in road:
             print ",".join([np.array_str(col) for col in row])

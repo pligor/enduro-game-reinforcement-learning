@@ -106,7 +106,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         self.curAction = None
 
         self.__curEnvironment = {
-            "road": road, "cars": cars, "speed": speed, "grid": grid
+            "road": np.array(road), "cars": cars, "speed": speed, "grid": grid
         }
         self.prevFeatureVectors = self.getFeatureVectorsForAllActions(prevEnv=self.__prevEnvironment,
                                                                       curEnv=self.__curEnvironment)
@@ -153,7 +153,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         """
         self.__prevEnvironment = self.__curEnvironment
         self.__curEnvironment = {
-            "road": road, "cars": cars, "speed": speed, "grid": grid
+            "road": np.array(road), "cars": cars, "speed": speed, "grid": grid
         }
 
         self.curFeatureVectors = self.getFeatureVectorsForAllActions(prevEnv=self.__prevEnvironment,
@@ -190,7 +190,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             # if self.actionSelection == self.softmaxActionSelection_computationallySafe:
             #     print self.probs_debug
             print self.prevFeatureVectors
+            print
             print self.curFeatureVectors
+            print
             print
 
         if self.debugging > 0 and learn:

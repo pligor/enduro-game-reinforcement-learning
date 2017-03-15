@@ -6,12 +6,60 @@ from road_category import RoadCategory
 from extreme_position import ExtremePosition
 from how_many_opponents import HowManyOpponents
 from sense import Sense
+from sklearn.metrics.pairwise import cosine_distances, cosine_similarity
 
 class Sensor(Sense):
     def __init__(self, rng):
         super(Sensor, self).__init__(rng)
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
+
+    def howMuchRoadTurning(self, road, action, pixelsThreshold = 10, factors = (0.1, 1, 2, 3, 10)):
+        # road is turning left by some degree, or right. If road is turning left, left action should be
+        # preferred. The rest in that order: accelerate, noop, brake, right
+        # the same for if road is turning right
+        middleCoord = self.roadWidth // 2
+
+        roadReference = road[0, middleCoord]
+        cameraReference = road[-1, middleCoord]
+        horizonReference = np.array((cameraReference[0], roadReference[1]))
+
+        roadNormalized = np.subtract(roadReference, cameraReference)
+        horizonNormalized = np.subtract(horizonReference, cameraReference)
+
+        cosSim = cosine_similarity(roadNormalized, horizonNormalized).flatten()[0]
+        assert cosSim >= 0
+        # large absolute value road is straight, small absolute value road is curved a lot
+
+        roadRef_x = roadReference[0]
+        camRef_x = cameraReference[0]
+
+        if abs(roadRef_x - camRef_x) < pixelsThreshold:
+            #straight ahead
+            return 1
+        else:
+            assert roadRef_x != camRef_x
+            isRoadTurningLeft = roadRef_x < camRef_x #is road turning left
+
+            actionPreferred = Action.LEFT if isRoadTurningLeft else Action.RIGHT
+            actionNotPreferred = Action.RIGHT if isRoadTurningLeft else Action.LEFT
+
+            #print cosSim
+            factors = (1. / cosSim) * np.array(factors)
+            #print factors.shape
+
+            if action == actionPreferred:
+                return factors[4]
+            elif action == Action.ACCELERATE:
+                return factors[3]
+            elif action == Action.NOOP:
+                return factors[2]
+            elif action == Action.BRAKE:
+                return factors[1]
+            elif action == actionNotPreferred:
+                return factors[0]
+
+        raise AssertionError  #invalid action detected
 
     def opponentsBeside(self, grid, action, factors = (0.1, 1, 2, 5, 9)):
         # detect if opponents are found on the left and the action is left then this should be a small value
