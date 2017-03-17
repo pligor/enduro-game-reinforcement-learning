@@ -22,6 +22,8 @@ if __name__ == "__main__":
 
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
+    """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
+
     def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
@@ -38,15 +40,6 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         self.middlefix = "linear_approx_take_one"
         self.rewardsFilename = "QLinearApproxAgent_%s_data" % self.middlefix
-
-        self.initialTheta = Qcase.RANDOM
-
-        # def changeQtable(table):
-        #     table[:, 0] = 10
-        #     # table[:, 1:4] = 0
-        #     return table
-        #
-        # self.initialTheta = changeQtable
 
         self.rng = rng
 

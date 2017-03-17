@@ -4,13 +4,43 @@ import numpy as np
 from how_many_opponents_discrete import HowManyOpponentsDiscrete
 from sensor import Sensor
 from enduro.action import Action
+from collections import OrderedDict
+from features_linear_approx import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
+import features_linear_approx
 
 
 class FeatureSenses(object):
+    """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
+
     def __init__(self, rng):
         self.nonLinearitiesEnabled = False
 
-        originalFeatureLen = 4
+        self.featureNameList = [
+            'MoveFasterWhenLessThanAverageSpeed',
+            'MoveSlowerWhenMoreThanAverageSpeed'
+        ]
+
+        weight_priors = []
+        for featureInstance in self.__featureIterator():
+            weight_priors.append(
+                featureInstance.getPriorForCorrespondingAction()
+            )
+
+        if hasattr(self, "getActionsSet"):
+            action_set = self.getActionsSet()
+        else:
+            raise AssertionError
+
+        originalFeatureLen = len(action_set) * len(self.featureNameList)
+        assert originalFeatureLen == len(weight_priors)
+
+        # self.initialTheta = Qcase.RANDOM
+        def changeWeights(vector):
+            vector[:originalFeatureLen] = weight_priors
+            return vector
+
+        self.initialTheta = changeWeights
+
         if self.nonLinearitiesEnabled:
             self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
         else:
@@ -38,32 +68,6 @@ class FeatureSenses(object):
         # the higher the speed the higher the need to turn and the further away we look at the road
         return
 
-    @staticmethod
-    def movingFasterResultsInPassingMoreCars(speed, action,
-                                             averageSpeed=20,
-                                             rbfSmoothness = 700,
-                                             factors = (0.1, 0.5, 0.9)):
-        # Consider speed itself to give some value, for example low speeds are really bad, but also high speeds are bad
-        # (not as bad though), and of course differentiate per action
-
-        rbfFunc = lambda x: np.exp(-((x - averageSpeed) ** 2) / rbfSmoothness)
-
-        speedFactor = rbfFunc(speed)
-
-        isSlowerThanAverage = speed < averageSpeed
-
-        preferredAction = Action.ACCELERATE if isSlowerThanAverage else Action.BRAKE
-        notPreferredAction = Action.BRAKE if isSlowerThanAverage else Action.ACCELERATE
-
-        if action == preferredAction:
-            return speedFactor * factors[2]
-        elif action == Action.NOOP:
-            return speedFactor * factors[1]
-        elif action == notPreferredAction:
-            return speedFactor * factors[0]
-        else:
-            return 0
-
     def stayingInTheCentreOfTheRoad(self, grid, action, road):
         return (
             self.sensor.distanceFromCentre(grid=grid, action=action),
@@ -71,18 +75,35 @@ class FeatureSenses(object):
             self.sensor.howMuchRoadTurning(road=road, action=action)
         )
 
+    def __featureIterator(self):
+        if hasattr(self, "getActionsSet"):
+            action_set = self.getActionsSet()
+
+            featureInstances = []
+
+            for cur_feat_name in self.featureNameList:
+                for cur_action in action_set:
+                    featureInstance = getattr(features_linear_approx, cur_feat_name)(
+                        corresponding_action=cur_action
+                    )
+
+                    featureInstances.append(featureInstance)
+
+            return featureInstances
+        else:
+            raise AssertionError
+
     def __getFeatureVector(self, prevEnv, action, curEnv):
         if prevEnv is None:
             return np.zeros(self.featureLen)
         else:
             # according to theory the state corresponds to the grid AFTER the action is taken
-            (distanceFromCentre, opponentsBeside, howMuchRoadTurning) = self.stayingInTheCentreOfTheRoad(
-                grid=curEnv['grid'],
-                road=curEnv['road'],
-                action=action
-            )
+            # (distanceFromCentre, opponentsBeside, howMuchRoadTurning) = self.stayingInTheCentreOfTheRoad(
+            #     grid=curEnv['grid'],
+            #     road=curEnv['road'],
+            #     action=action
+            # )
 
-            howFastOurCarMoves = self.movingFasterResultsInPassingMoreCars(curEnv['speed'], action=action)
             # roadCateg = self.sensor.getRoadCateg(prevGrid, action, newGrid)
             # extremePos = self.sensor.getExtremePosition(latestGrid=newGrid)
             #
@@ -97,18 +118,21 @@ class FeatureSenses(object):
             #
             # areOpponentsSurpassing = self.sensor.doesOpponentSurpasses(prevGrid, newGrid)
 
-            featureVector = np.array([
-                distanceFromCentre,
-                opponentsBeside,
-                howMuchRoadTurning,
-                howFastOurCarMoves
-            ])
+            featureValuesVector = []
+
+            for featureInstance in self.__featureIterator():
+                featureValuesVector.append(
+                    featureInstance.getFeatureValue(cur_action=action, speed=curEnv['speed'])
+                )
+
+            featureValuesVector = np.array(featureValuesVector)
 
             if self.nonLinearitiesEnabled:
-                featureVector = np.concatenate((featureVector, self.multiplyCombinations(featureVector)))
-                assert len(featureVector) == self.featureLen
+                featureValuesVector = np.concatenate(
+                    (featureValuesVector, self.multiplyCombinations(featureValuesVector)))
+                assert len(featureValuesVector) == self.featureLen
 
-            return featureVector
+            return featureValuesVector
 
     @staticmethod
     def countCombinations(originalFeatureLen):

@@ -14,6 +14,8 @@ class Sensor(Sense):
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
 
+    #def opponentsEffect
+
     def howMuchRoadTurning(self, road, action, pixelsThreshold = 10, factors = (0.01, 0.1, 0.2, 0.3, 1)):
         # road is turning left by some degree, or right. If road is turning left, left action should be
         # preferred. The rest in that order: accelerate, noop, brake, right
