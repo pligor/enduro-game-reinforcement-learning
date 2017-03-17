@@ -13,7 +13,7 @@ class Q_LinearApprox(object):
 
                 elif self.initialTheta == Qcase.RANDOM:
                     if hasattr(self, "rng"):
-                        self.thetaVector = self.rng.rand(self.featureLen)
+                        self.thetaVector = self.rng.randn(self.featureLen)
                     else:
                         raise AssertionError
 

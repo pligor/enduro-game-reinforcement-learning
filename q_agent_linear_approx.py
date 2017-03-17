@@ -11,6 +11,7 @@ from q_case import Qcase
 from q_linear_approx import Q_LinearApprox
 from os.path import isfile
 from action_selection import EgreedyActionSelection, SoftmaxActionSelection
+from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
     totalEpisodesCount = 1
@@ -21,12 +22,15 @@ if __name__ == "__main__":
         from skopt import gp_minimize
 
 
-class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, Agent):
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
+                         Agent):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
     def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
+
+        self.keyboardControlEnabled = False
 
         self.epsilon = 0.01
 
@@ -129,7 +133,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         #         self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
         # self.curAction = self.actionSelection(Qs, computationalTemperature=self.computationalTemperature, onProbs=onProbs)
 
-        self.curAction = self.actionSelection(Qs)
+        self.curAction = self.selectActionByKeyboard() if self.keyboardControlEnabled else self.actionSelection(Qs)
 
         self.curReward = self.move(self.curAction)
         # self.curReward = -0.01 if self.curReward == 0 else self.curReward
@@ -182,8 +186,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             print Action.toString(self.curAction)
             # if self.actionSelection == self.softmaxActionSelection_computationallySafe:
             #     print self.probs_debug
-            print self.prevFeatureVectors
-            print
+            # print self.prevFeatureVectors
+            # print
+            print self.thetaVector
             print self.curFeatureVectors
             print
             print

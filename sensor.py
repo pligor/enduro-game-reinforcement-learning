@@ -8,15 +8,87 @@ from how_many_opponents import HowManyOpponents
 from sense import Sense
 from sklearn.metrics.pairwise import cosine_distances, cosine_similarity
 
+
 class Sensor(Sense):
     def __init__(self, rng):
         super(Sensor, self).__init__(rng)
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
 
-    #def opponentsEffect
+    def getAngleOfOpponentFromEnv(self, cars, road, opp_index):
+        self_vec = cars['self'][:2]
 
-    def howMuchRoadTurning(self, road, action, pixelsThreshold = 10, factors = (0.01, 0.1, 0.2, 0.3, 1)):
+        invalid = (0, None)
+
+        if "others" in cars:
+            opponents = cars['others']
+            opponentsCount = len(opponents)
+
+            horizon_vec = self.getHorizonVec(road)
+
+            if opponentsCount > opp_index:
+                return self.getAngleOfOpponent(opponent=opponents[opp_index],
+                                               horizon_vec=horizon_vec, self_vec=self_vec)
+            else:
+                return invalid
+        else:
+            return invalid
+
+    def getAngleOfOpponent(self, opponent, self_vec, horizon_vec):
+        opponent_vec = opponent[:2]
+        opp_car_vec = np.subtract(self_vec, opponent_vec)
+
+        hor_car_vec = np.subtract(self_vec, horizon_vec)
+
+        # same_x_far_y = np.array((self_vec[0], 0))  # 0 is the maximum point in the screen
+        # recall the y axis in the screen counts from top to bottom
+        # self_perpendicular = np.subtract(self_vec, same_x_far_y)
+        axis = np.array([1, 0])
+
+        # True left, False right
+        isOpponentLeft = cosine_similarity(axis.reshape(1, -1), opp_car_vec.reshape(1, -1)) > \
+                         cosine_similarity(axis.reshape(1, -1), hor_car_vec.reshape(1, -1))
+
+        # also reshaping due to indiocyncracies of the cosine similarity function
+        cos_sim = cosine_similarity(hor_car_vec.reshape(1, -1), opp_car_vec.reshape(1, -1)).flatten()[0]
+        return cos_sim, isOpponentLeft
+
+    def getAngleOfOpponents(self, cars, road):
+        self_vec = cars['self'][:2]
+
+        if "others" in cars:
+            opponents = cars['others']
+            opponentsCount = len(opponents)
+
+            horizon_vec = self.getHorizonVec(road)
+
+            if opponentsCount > 0:
+                # cosSims = [
+                #     self.getAngleOfOpponent(opponent=opponents[opp_index],
+                #                             horizon_vec=horizon_vec, self_vec=self_vec)
+                #     for opp_index in range(opponentsCount)]
+
+                self.getAngleOfOpponent(opponent=opponents[0],
+                                        horizon_vec=horizon_vec, self_vec=self_vec)
+
+                # for opp_ind, opp in enumerate(opponents):
+                #    cosine_similarity( horizon_vec,  )
+
+                # print "cosSims: {}".format(
+                #     cosSims
+                # )
+            else:
+                return 0
+        else:
+            return 0
+
+    def getHorizonVec(self, road):
+        middleCoord = self.roadWidth // 2
+        roadReference = road[0, middleCoord]
+        cameraReference = road[-1, middleCoord]
+        return np.array((cameraReference[0], roadReference[1]))
+
+    def howMuchRoadTurning(self, road, action, pixelsThreshold=10, factors=(0.01, 0.1, 0.2, 0.3, 1)):
         # road is turning left by some degree, or right. If road is turning left, left action should be
         # preferred. The rest in that order: accelerate, noop, brake, right
         # the same for if road is turning right
@@ -37,18 +109,18 @@ class Sensor(Sense):
         camRef_x = cameraReference[0]
 
         if abs(roadRef_x - camRef_x) < pixelsThreshold:
-            #straight ahead
+            # straight ahead
             return 1
         else:
             assert roadRef_x != camRef_x
-            isRoadTurningLeft = roadRef_x < camRef_x #is road turning left
+            isRoadTurningLeft = roadRef_x < camRef_x  # is road turning left
 
             actionPreferred = Action.LEFT if isRoadTurningLeft else Action.RIGHT
             actionNotPreferred = Action.RIGHT if isRoadTurningLeft else Action.LEFT
 
-            #print cosSim
+            # print cosSim
             factors = (1. / cosSim) * np.array(factors)
-            #print factors.shape
+            # print factors.shape
 
             if action == actionPreferred:
                 return factors[4]
@@ -61,9 +133,9 @@ class Sensor(Sense):
             elif action == actionNotPreferred:
                 return factors[0]
 
-        raise AssertionError  #invalid action detected
+        raise AssertionError  # invalid action detected
 
-    def opponentsBeside(self, grid, action, factors = (0.01, 0.1, 0.2, 0.5, 0.9)):
+    def opponentsBeside(self, grid, action, factors=(0.01, 0.1, 0.2, 0.5, 0.9)):
         # detect if opponents are found on the left and the action is left then this should be a small value
         # if opponents are found on the right and the action is right then small value
         # brake should have a smaller impact, noop smaller
@@ -106,11 +178,11 @@ class Sensor(Sense):
                 return factors[2]
 
         else:
-            return 0  #do not let it play a role
+            return 0  # do not let it play a role
 
-        raise AssertionError  #an unexpected action was used
+        raise AssertionError  # an unexpected action was used
 
-    def distanceFromCentre(self, grid, action, factor = 2.):
+    def distanceFromCentre(self, grid, action, factor=2.):
         # being in the centre [4 or 5 position] we need the highest value, the lowest value at the edges
         # 4.5 - 0 = 4.5, 4.5 - 9 = -4.5, while 4.5 - 4 = 0.5 and 4.5 - 5 = -0.5
         # if negative means we are on the right, action Left should bring it a larger value, action Right a smaller
@@ -119,19 +191,20 @@ class Sensor(Sense):
         carPos = self.getOurCarPos(grid)
         middlePos = (self.gridWidth - 1) / 2.
         distance = middlePos - carPos
-        areWeOnTheRight =  distance < 0
+        areWeOnTheRight = distance < 0
         areWeOnTheLeft = not areWeOnTheRight
 
         distance **= 2
 
-        if (areWeOnTheRight and action == Action.RIGHT) or ( areWeOnTheLeft and action == Action.LEFT):
+        if (areWeOnTheRight and action == Action.RIGHT) or (areWeOnTheLeft and action == Action.LEFT):
             return distance / factor
         elif (areWeOnTheRight and action == Action.LEFT) or (areWeOnTheLeft and action == Action.RIGHT):
             return distance * factor
         else:
             return distance
 
-    ####################################################################################################################
+            ####################################################################################################################
+
 
 if __name__ == "__main__":
     seed = 16011984
@@ -207,6 +280,7 @@ if __name__ == "__main__":
         print prevGrid
         print sense.isRoadTurningLeft(prevGrid, Action.BREAK, newGrid)
         print newGrid
+
 
     def testCountOpponents():
         grid = sense.generateEmptyGrid()

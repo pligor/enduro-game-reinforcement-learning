@@ -7,7 +7,7 @@ from sensor import Sensor
 class Feature(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
-    def __init__(self, corresponding_action):
+    def __init__(self, corresponding_action, rng):
         super(Feature, self).__init__()
         assert corresponding_action in (
             Action.ACCELERATE,
@@ -31,13 +31,93 @@ class Feature(object):
             raise AssertionError
 
 
+class FirstOpponentFeature(Feature):
+    def __init__(self, corresponding_action, rng):
+        self.priors_per_action = {
+            Action.ACCELERATE: 0,
+            Action.RIGHT: 0,
+            Action.LEFT: 0,
+            Action.BRAKE: 0,
+            Action.NOOP: 0,
+        }
+
+        super(FirstOpponentFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
+
+        self.sensor = Sensor(rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        OPPONENT_INDEX = 0
+
+        cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
+            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
+        )
+        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
+        multiplier = -1 if isOpponentLeft else 1
+        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
+        return super(FirstOpponentFeature, self).getFeatureValue(cur_action, value=value)
+
+
+class SecondOpponentFeature(Feature):
+    def __init__(self, corresponding_action, rng):
+        self.priors_per_action = {
+            Action.ACCELERATE: 0,
+            Action.RIGHT: 0,
+            Action.LEFT: 0,
+            Action.BRAKE: 0,
+            Action.NOOP: 0,
+        }
+
+        super(SecondOpponentFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
+
+        self.sensor = Sensor(rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        OPPONENT_INDEX = 1
+
+        cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
+            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
+        )
+        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
+        multiplier = -1 if isOpponentLeft else 1
+        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
+        return super(SecondOpponentFeature, self).getFeatureValue(cur_action, value=value)
+
+
+class ThirdOpponentFeature(Feature):
+    def __init__(self, corresponding_action, rng):
+        self.priors_per_action = {
+            Action.ACCELERATE: 0,
+            Action.RIGHT: 0,
+            Action.LEFT: 0,
+            Action.BRAKE: 0,
+            Action.NOOP: 0,
+        }
+
+        super(ThirdOpponentFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
+
+        self.sensor = Sensor(rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        OPPONENT_INDEX = 2
+
+        cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
+            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
+        )
+        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
+        multiplier = -1 if isOpponentLeft else 1
+        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
+        return super(ThirdOpponentFeature, self).getFeatureValue(cur_action, value=value)
+
+
 class MovingFasterResultsInPassingMoreCars(Feature):
     default_rbf_wideness = 700
-    default_average_speed = 20
+    default_average_speed = 30
 
-    def __init__(self, corresponding_action,
+    def __init__(self, corresponding_action, rng,
                  rbf_wideness=default_rbf_wideness, average_speed=default_average_speed):
-        super(MovingFasterResultsInPassingMoreCars, self).__init__(corresponding_action=corresponding_action)
+        super(MovingFasterResultsInPassingMoreCars, self).__init__(
+            corresponding_action=corresponding_action, rng=rng
+        )
         self.average_speed = average_speed
         self.rbf_wideness = rbf_wideness
 
@@ -51,7 +131,7 @@ class MovingFasterResultsInPassingMoreCars(Feature):
 
 
 class MoveFasterWhenLessThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
-    def __init__(self, corresponding_action):
+    def __init__(self, corresponding_action, rng):
         self.priors_per_action = {
             Action.ACCELERATE: 9,
             Action.RIGHT: 1,
@@ -60,7 +140,9 @@ class MoveFasterWhenLessThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
             Action.NOOP: 1,
         }
 
-        super(MoveFasterWhenLessThanAverageSpeed, self).__init__(corresponding_action=corresponding_action)
+        super(MoveFasterWhenLessThanAverageSpeed, self).__init__(
+            corresponding_action=corresponding_action, rng=rng
+        )
 
     def getFeatureValue(self, cur_action, **kwargs):
         isSlowerThanAverage = kwargs['speed'] < self.average_speed
@@ -70,7 +152,7 @@ class MoveFasterWhenLessThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
 
 
 class MoveSlowerWhenMoreThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
-    def __init__(self, corresponding_action):
+    def __init__(self, corresponding_action, rng):
         self.priors_per_action = {
             Action.ACCELERATE: -8,
             Action.RIGHT: 1,
@@ -79,7 +161,9 @@ class MoveSlowerWhenMoreThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
             Action.NOOP: 1,
         }
 
-        super(MoveSlowerWhenMoreThanAverageSpeed, self).__init__(corresponding_action=corresponding_action)
+        super(MoveSlowerWhenMoreThanAverageSpeed, self).__init__(
+            corresponding_action=corresponding_action, rng=rng
+        )
 
     def getFeatureValue(self, cur_action, **kwargs):
         isFasterThanAverage = kwargs['speed'] > self.average_speed

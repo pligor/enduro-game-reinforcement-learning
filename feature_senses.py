@@ -17,7 +17,10 @@ class FeatureSenses(object):
 
         self.featureNameList = [
             'MoveFasterWhenLessThanAverageSpeed',
-            'MoveSlowerWhenMoreThanAverageSpeed'
+            'MoveSlowerWhenMoreThanAverageSpeed',
+            'FirstOpponentFeature',
+            'SecondOpponentFeature',
+            'ThirdOpponentFeature'
         ]
 
         weight_priors = []
@@ -37,6 +40,8 @@ class FeatureSenses(object):
         # self.initialTheta = Qcase.RANDOM
         def changeWeights(vector):
             vector[:originalFeatureLen] = weight_priors
+            #fill the rest with random values
+            vector[vector == 0] = np.random.randn(len(vector[vector == 0]))
             return vector
 
         self.initialTheta = changeWeights
@@ -76,7 +81,7 @@ class FeatureSenses(object):
         )
 
     def __featureIterator(self):
-        if hasattr(self, "getActionsSet"):
+        if hasattr(self, "getActionsSet") and hasattr(self, "rng"):
             action_set = self.getActionsSet()
 
             featureInstances = []
@@ -84,7 +89,7 @@ class FeatureSenses(object):
             for cur_feat_name in self.featureNameList:
                 for cur_action in action_set:
                     featureInstance = getattr(features_linear_approx, cur_feat_name)(
-                        corresponding_action=cur_action
+                        corresponding_action=cur_action, rng=self.rng
                     )
 
                     featureInstances.append(featureInstance)
@@ -122,7 +127,10 @@ class FeatureSenses(object):
 
             for featureInstance in self.__featureIterator():
                 featureValuesVector.append(
-                    featureInstance.getFeatureValue(cur_action=action, speed=curEnv['speed'])
+                    featureInstance.getFeatureValue(cur_action=action,
+                                                    speed=curEnv['speed'],
+                                                    cars=curEnv['cars'],
+                                                    road=curEnv['road'])
                 )
 
             featureValuesVector = np.array(featureValuesVector)

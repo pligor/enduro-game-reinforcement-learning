@@ -61,15 +61,15 @@ class FunctionApproximationAgent(Agent):
         """
         road = np.array(road)
 
-        print road.shape #12, 11, 2
+        print road.shape  #12, 11, 2
 
         for row in road:
             print ",".join([np.array_str(col) for col in row])
 
         #print  ",".join([np.array_str(row) for row in np.array(road)])
         print grid.shape
-        print speed #-50 to +50
-        print cars #{'self': (91, 106, 18, 7), 'others': [(163, 90, 16, 6), (166, 76, 10, 4), (184, 53, 4, 2)]}
+        print speed  #-50 to +50
+        print cars  #{'self': (91, 106, 18, 7), 'others': [(163, 90, 16, 6), (166, 76, 10, 4), (184, 53, 4, 2)]}
         pass
 
     def learn(self):
