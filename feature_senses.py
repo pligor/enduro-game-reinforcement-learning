@@ -20,7 +20,8 @@ class FeatureSenses(object):
             'MoveSlowerWhenMoreThanAverageSpeed',
             'FirstOpponentFeature',
             'SecondOpponentFeature',
-            'ThirdOpponentFeature'
+            'ThirdOpponentFeature',
+            'ConstantBiasFeature'
         ]
 
         weight_priors = []

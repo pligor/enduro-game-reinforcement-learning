@@ -30,6 +30,21 @@ class Feature(object):
         else:
             raise AssertionError
 
+class ConstantBiasFeature(Feature):
+    def __init__(self, corresponding_action, rng):
+        self.priors_per_action = {
+            Action.ACCELERATE: 0,
+            Action.RIGHT: 0,
+            Action.LEFT: 0,
+            Action.BRAKE: 0,
+            Action.NOOP: 0,
+        }
+
+        super(ConstantBiasFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        return super(ConstantBiasFeature, self).getFeatureValue(cur_action, value=1)
+
 class OpponentImpactFeature(Feature):
     def __init__(self, corresponding_action, rng):
         super(OpponentImpactFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)

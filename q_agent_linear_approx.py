@@ -14,13 +14,13 @@ from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
-    totalEpisodesCount = 30
+    counter = 0
+    totalEpisodesCount = 40
     seed = 16011984
-    debugging = 0
+    debugging = 200
     #if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
-
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
                          Agent):
@@ -43,7 +43,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         self.gamma = 0.9
 
         self.middlefix = "linear_approx_take_one"
-        self.rewardsFilename = "QLinearApproxAgent_%s_data" % self.middlefix
+        self.rewardsFilename = "QLinearApproxAgent_{:2d}_{}_{}_data".format(
+            counter, self.middlefix, totalEpisodesCount
+        )
 
         self.rng = rng
 
@@ -213,7 +215,7 @@ if __name__ == "__main__":
         total_rewards, _ = agent.getRewardInfo()
         print total_rewards
 
-        # TO DO print agent.storeRewardInfo()
+        #print agent.storeRewardInfo()
         # TO DO np.save(agent.middlefix + "_bellmanQ", agent.bellmanQ)
 
         return np.mean(total_rewards)

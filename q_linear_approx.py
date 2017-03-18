@@ -36,9 +36,19 @@ class Q_LinearApprox(object):
     def updateQsa(self, learningRate, curReward, gamma, curFeatureVectorsForAllActions, prevFeatureVector):
         assert learningRate > 0
 
+        maxTerm = np.max(self.getQbyS(curFeatureVectorsForAllActions))
+        # print "maxTerm"
+        # print maxTerm
+
+        previousQ = self.getQsa(prevFeatureVector)
+        # print "previousQ"
+        # print previousQ
+
         self.thetaVector += learningRate * (
-            curReward + gamma * np.max(self.getQbyS(curFeatureVectorsForAllActions)) - self.getQsa(prevFeatureVector)
+            curReward + gamma * maxTerm - previousQ
         ) * prevFeatureVector
+
+        #self.thetaVector = np.clip(self.thetaVector, -1e100, 1e100)
 
     def getQsa(self, featureVector):
         return self.thetaVector.dot(featureVector)
