@@ -14,12 +14,12 @@ from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
-    totalEpisodesCount = 1
+    totalEpisodesCount = 30
     seed = 16011984
-    debugging = 100
-    if debugging == 0:
-        from skopt.space.space import Integer, Real
-        from skopt import gp_minimize
+    debugging = 0
+    #if debugging == 0:
+    # from skopt.space.space import Integer, Real
+    # from skopt import gp_minimize
 
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
@@ -189,8 +189,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             # print self.prevFeatureVectors
             # print
             print self.thetaVector
-            print self.curFeatureVectors
-            print
+            #print self.curFeatureVectors
             print
 
         if self.debugging > 0 and learn:

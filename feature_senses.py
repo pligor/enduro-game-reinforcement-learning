@@ -41,7 +41,7 @@ class FeatureSenses(object):
         def changeWeights(vector):
             vector[:originalFeatureLen] = weight_priors
             #fill the rest with random values
-            vector[vector == 0] = np.random.randn(len(vector[vector == 0]))
+            vector[vector == 0] = rng.randn(len(vector[vector == 0]))
             return vector
 
         self.initialTheta = changeWeights

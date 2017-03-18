@@ -30,8 +30,30 @@ class Feature(object):
         else:
             raise AssertionError
 
+class OpponentImpactFeature(Feature):
+    def __init__(self, corresponding_action, rng):
+        super(OpponentImpactFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
+        self.sensor = Sensor(rng)
 
-class FirstOpponentFeature(Feature):
+    def getFeatureValue(self, cur_action, **kwargs):
+        OPPONENT_INDEX = kwargs['OPPONENT_INDEX']
+
+        # cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
+        #     cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
+        # )
+        cos_sim, isOpponentLeft, magnitude = self.sensor.getAngleAndMagnitudeOfOpponentFromEnv(
+            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
+        )
+
+        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
+
+        multiplier = -magnitude if isOpponentLeft else magnitude
+
+        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
+
+        return super(OpponentImpactFeature, self).getFeatureValue(cur_action, value=value)
+
+class FirstOpponentFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.priors_per_action = {
             Action.ACCELERATE: 0,
@@ -43,21 +65,11 @@ class FirstOpponentFeature(Feature):
 
         super(FirstOpponentFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
 
-        self.sensor = Sensor(rng)
-
     def getFeatureValue(self, cur_action, **kwargs):
-        OPPONENT_INDEX = 0
+        kwargs['OPPONENT_INDEX'] = 0
+        return super(FirstOpponentFeature, self).getFeatureValue(cur_action, **kwargs)
 
-        cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
-            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
-        )
-        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
-        multiplier = -1 if isOpponentLeft else 1
-        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
-        return super(FirstOpponentFeature, self).getFeatureValue(cur_action, value=value)
-
-
-class SecondOpponentFeature(Feature):
+class SecondOpponentFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.priors_per_action = {
             Action.ACCELERATE: 0,
@@ -69,21 +81,12 @@ class SecondOpponentFeature(Feature):
 
         super(SecondOpponentFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
 
-        self.sensor = Sensor(rng)
-
     def getFeatureValue(self, cur_action, **kwargs):
-        OPPONENT_INDEX = 1
-
-        cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
-            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
-        )
-        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
-        multiplier = -1 if isOpponentLeft else 1
-        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
-        return super(SecondOpponentFeature, self).getFeatureValue(cur_action, value=value)
+        kwargs['OPPONENT_INDEX'] = 1
+        return super(SecondOpponentFeature, self).getFeatureValue(cur_action, **kwargs)
 
 
-class ThirdOpponentFeature(Feature):
+class ThirdOpponentFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.priors_per_action = {
             Action.ACCELERATE: 0,
@@ -95,18 +98,9 @@ class ThirdOpponentFeature(Feature):
 
         super(ThirdOpponentFeature, self).__init__(corresponding_action=corresponding_action, rng=rng)
 
-        self.sensor = Sensor(rng)
-
     def getFeatureValue(self, cur_action, **kwargs):
-        OPPONENT_INDEX = 2
-
-        cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
-            cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
-        )
-        cos_sim_clipped = cos_sim if cos_sim > 0 else 0
-        multiplier = -1 if isOpponentLeft else 1
-        value = 0 if isOpponentLeft is None else cos_sim_clipped * multiplier
-        return super(ThirdOpponentFeature, self).getFeatureValue(cur_action, value=value)
+        kwargs['OPPONENT_INDEX'] = 2
+        return super(ThirdOpponentFeature, self).getFeatureValue(cur_action, **kwargs)
 
 
 class MovingFasterResultsInPassingMoreCars(Feature):

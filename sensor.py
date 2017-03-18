@@ -15,6 +15,33 @@ class Sensor(Sense):
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
 
+    def getAngleAndMagnitudeOfOpponentFromEnv(self, cars, road, opp_index):
+        self_vec = cars['self'][:2]
+
+        invalid = (0, None, 0)
+
+        if "others" in cars:
+            opponents = cars['others']
+            opponentsCount = len(opponents)
+
+            horizon_vec = self.getHorizonVec(road)
+
+            if opponentsCount > opp_index:
+                cur_opp = opponents[opp_index]
+
+                magnitude = cur_opp[2] * cur_opp[3]
+
+                cos_sim, isOpponentLeft = self.getAngleOfOpponent(
+                    opponent=cur_opp,
+                    horizon_vec=horizon_vec, self_vec=self_vec
+                )
+
+                return cos_sim, isOpponentLeft, magnitude
+            else:
+                return invalid
+        else:
+            return invalid
+
     def getAngleOfOpponentFromEnv(self, cars, road, opp_index):
         self_vec = cars['self'][:2]
 
