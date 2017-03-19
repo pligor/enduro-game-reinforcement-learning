@@ -5,9 +5,7 @@ from how_many_opponents_discrete import HowManyOpponentsDiscrete
 from sensor import Sensor
 from enduro.action import Action
 from collections import OrderedDict
-from features_linear_approx import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
-import features_linear_approx
-
+from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -15,18 +13,18 @@ class FeatureSenses(object):
     def __init__(self, rng):
         self.nonLinearitiesEnabled = False
 
-        self.featureNameList = [
-            'MoveFasterWhenLessThanAverageSpeed',
-            'MoveSlowerWhenMoreThanAverageSpeed',
-            'FirstOpponentFeature',
-            'SecondOpponentFeature',
-            'ThirdOpponentFeature',
-            'ConstantBiasFeature'
+        feature_class_list = [
+            MoveFasterWhenLessThanAverageSpeed,
+            MoveSlowerWhenMoreThanAverageSpeed,
+            # 'FirstOpponentFeature',
+            # 'SecondOpponentFeature',
+            # 'ThirdOpponentFeature',
+            # 'ConstantBiasFeature'
         ]
 
         weight_priors = []
 
-        self.featureList = self.__generateFeatures()
+        self.featureList = self.__generateFeatures(feature_class_list=feature_class_list)
 
         for featureInstance in self.featureList:
             weight_priors.append(
@@ -38,7 +36,7 @@ class FeatureSenses(object):
         else:
             raise AssertionError
 
-        originalFeatureLen = len(action_set) * len(self.featureNameList)
+        originalFeatureLen = len(action_set) * len(feature_class_list)
         assert originalFeatureLen == len(weight_priors)
 
         # self.initialTheta = Qcase.RANDOM
@@ -84,15 +82,15 @@ class FeatureSenses(object):
             self.sensor.howMuchRoadTurning(road=road, action=action)
         )
 
-    def __generateFeatures(self):
+    def __generateFeatures(self, feature_class_list):
         if hasattr(self, "getActionsSet") and hasattr(self, "rng"):
             action_set = self.getActionsSet()
 
             featureInstances = []
 
-            for cur_feat_name in self.featureNameList:
+            for cur_feat_class in feature_class_list:
                 for cur_action in action_set:
-                    featureInstance = getattr(features_linear_approx, cur_feat_name)(
+                    featureInstance = cur_feat_class(
                         corresponding_action=cur_action, rng=self.rng
                     )
 
