@@ -25,7 +25,10 @@ class FeatureSenses(object):
         ]
 
         weight_priors = []
-        for featureInstance in self.__featureIterator():
+
+        self.featureList = self.__generateFeatures()
+
+        for featureInstance in self.featureList:
             weight_priors.append(
                 featureInstance.getPriorForCorrespondingAction()
             )
@@ -81,7 +84,7 @@ class FeatureSenses(object):
             self.sensor.howMuchRoadTurning(road=road, action=action)
         )
 
-    def __featureIterator(self):
+    def __generateFeatures(self):
         if hasattr(self, "getActionsSet") and hasattr(self, "rng"):
             action_set = self.getActionsSet()
 
@@ -126,7 +129,7 @@ class FeatureSenses(object):
 
             featureValuesVector = []
 
-            for featureInstance in self.__featureIterator():
+            for featureInstance in self.featureList:
                 featureValuesVector.append(
                     featureInstance.getFeatureValue(cur_action=action,
                                                     speed=curEnv['speed'],
