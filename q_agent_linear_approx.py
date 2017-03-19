@@ -33,7 +33,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         self.keyboardControlEnabled = False
 
-        self.epsilon = 0.01
+        self.epsilon = 0.05
 
         # small more like max, large more like random, i.e 5e-3
         self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[

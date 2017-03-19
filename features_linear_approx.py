@@ -67,11 +67,11 @@ class ContrainedFeature(WithFeatureValue):
         self.old_max = max(self.old_max, cur_value)
         self.old_min = min(self.old_min, cur_value)
 
-        print "cur value {}".format(cur_value)
+        #print "cur value {}".format(cur_value)
 
         constrained_value = self.constrain(cur_value)
 
-        print "constrained value {}".format(constrained_value)
+        #print "constrained value {}".format(constrained_value)
 
         return super(ContrainedFeature, self).getFeatureValue(cur_action, value=constrained_value)
 

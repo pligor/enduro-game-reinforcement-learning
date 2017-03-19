@@ -70,11 +70,15 @@ class Sensor(Sense):
         # same_x_far_y = np.array((self_vec[0], 0))  # 0 is the maximum point in the screen
         # recall the y axis in the screen counts from top to bottom
         # self_perpendicular = np.subtract(self_vec, same_x_far_y)
-        axis = np.array([1, 0])
+        # axis = np.array([1, 0])
+        # isOpponentLeft = cosine_similarity(axis.reshape(1, -1), opp_car_vec.reshape(1, -1)) > \
+        #                  cosine_similarity(axis.reshape(1, -1), hor_car_vec.reshape(1, -1))
 
-        # True left, False right
-        isOpponentLeft = cosine_similarity(axis.reshape(1, -1), opp_car_vec.reshape(1, -1)) > \
-                         cosine_similarity(axis.reshape(1, -1), hor_car_vec.reshape(1, -1))
+        # https://www.quora.com/How-do-you-calculate-the-order-of-two-vectors
+        # A is the hor_car vector and B is the opp_car vector
+        isOpponentLeft = (hor_car_vec[0] * opp_car_vec[1] - opp_car_vec[0] * hor_car_vec[1]) > 0
+
+        #print "isOpponentLeft {}".format(isOpponentLeft)
 
         # also reshaping due to indiocyncracies of the cosine similarity function
         cos_sim = cosine_similarity(hor_car_vec.reshape(1, -1), opp_car_vec.reshape(1, -1)).flatten()[0]
