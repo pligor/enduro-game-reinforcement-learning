@@ -17,7 +17,7 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 40
     seed = 16011984
-    debugging = 200
+    debugging = 500
     #if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -29,6 +29,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
     def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
+        self.learning_rate_factor = 1e-2
 
         self.keyboardControlEnabled = False
 
@@ -91,7 +92,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         # return 0.5
 
         # by episode
-        return 1. / np.power(self.episodeCounter, self.lr_p_param)
+        return self.learning_rate_factor / np.power(self.episodeCounter, self.lr_p_param)
 
     def initialise(self, road, cars, speed, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""

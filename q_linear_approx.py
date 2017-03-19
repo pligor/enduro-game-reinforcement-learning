@@ -45,8 +45,8 @@ class Q_LinearApprox(object):
         # print previousQ
 
         self.thetaVector += learningRate * (
-            curReward + gamma * maxTerm - previousQ
-        ) * prevFeatureVector
+            (curReward + gamma * maxTerm - previousQ) * prevFeatureVector #- 2 * self.thetaVector
+        )
 
         #self.thetaVector = np.clip(self.thetaVector, -1e100, 1e100)
 
