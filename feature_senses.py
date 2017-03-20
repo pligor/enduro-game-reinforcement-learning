@@ -8,7 +8,8 @@ from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
 from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
 from enduro_env import EnduroEnv
-from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature
+from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
+    SecondOpponentLeftFeature, SecondOpponentRightFeature
 from enduro_features.feature_base import ConstantBiasFeature
 
 
@@ -25,7 +26,8 @@ class FeatureSenses(object):
             MoveRightWhenLeft,
             FirstOpponentLeftFeature,
             FirstOpponentRightFeature,
-            # 'SecondOpponentFeature',
+            SecondOpponentLeftFeature,
+            SecondOpponentRightFeature,
             # 'ThirdOpponentFeature',
             ConstantBiasFeature,
         ]

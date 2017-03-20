@@ -110,7 +110,7 @@ class FirstOpponentRightFeature(OpponentImpactFeature):
         return super(FirstOpponentRightFeature, self).getFeatureValue(cur_action, **kwargs)
 
 
-class SecondOpponentFeature(OpponentImpactFeature):
+class SecondOpponentLeftFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
@@ -122,14 +122,21 @@ class SecondOpponentFeature(OpponentImpactFeature):
             Action.NOOP: 0,
         }
 
-        super(SecondOpponentFeature, self).__init__(rng=rng)
+        super(SecondOpponentLeftFeature, self).__init__(rng=rng)
 
     def getFeatureValue(self, cur_action, **kwargs):
         kwargs['OPPONENT_INDEX'] = 1
-        return super(SecondOpponentFeature, self).getFeatureValue(cur_action, **kwargs)
+        cos_sim, isOpponentLeft, magnitude = self.get_angle_magnitude(**kwargs)
+
+        check = (isOpponentLeft is not None) and isOpponentLeft
+
+        kwargs['cos_sim'] = cos_sim if check else None
+        kwargs['magnitude'] = magnitude if check else None
+
+        return super(SecondOpponentLeftFeature, self).getFeatureValue(cur_action, **kwargs)
 
 
-class ThirdOpponentFeature(OpponentImpactFeature):
+class SecondOpponentRightFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
@@ -141,8 +148,67 @@ class ThirdOpponentFeature(OpponentImpactFeature):
             Action.NOOP: 0,
         }
 
-        super(ThirdOpponentFeature, self).__init__(rng=rng)
+        super(SecondOpponentRightFeature, self).__init__(rng=rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        kwargs['OPPONENT_INDEX'] = 1
+        cos_sim, isOpponentLeft, magnitude = self.get_angle_magnitude(**kwargs)
+
+        check = (isOpponentLeft is not None) and (not isOpponentLeft)
+
+        kwargs['cos_sim'] = cos_sim if check else None
+        kwargs['magnitude'] = magnitude if check else None
+
+        return super(SecondOpponentRightFeature, self).getFeatureValue(cur_action, **kwargs)
+
+
+class ThirdOpponentLeftFeature(OpponentImpactFeature):
+    def __init__(self, corresponding_action, rng):
+        self.corresponding_action = corresponding_action
+
+        self.priors_per_action = {
+            Action.ACCELERATE: 0,
+            Action.RIGHT: 0,
+            Action.LEFT: 0,
+            Action.BRAKE: 0,
+            Action.NOOP: 0,
+        }
+
+        super(ThirdOpponentLeftFeature, self).__init__(rng=rng)
 
     def getFeatureValue(self, cur_action, **kwargs):
         kwargs['OPPONENT_INDEX'] = 2
-        return super(ThirdOpponentFeature, self).getFeatureValue(cur_action, **kwargs)
+        cos_sim, isOpponentLeft, magnitude = self.get_angle_magnitude(**kwargs)
+
+        check = (isOpponentLeft is not None) and isOpponentLeft
+
+        kwargs['cos_sim'] = cos_sim if check else None
+        kwargs['magnitude'] = magnitude if check else None
+
+        return super(ThirdOpponentLeftFeature, self).getFeatureValue(cur_action, **kwargs)
+
+
+class ThirdOpponentRightFeature(OpponentImpactFeature):
+    def __init__(self, corresponding_action, rng):
+        self.corresponding_action = corresponding_action
+
+        self.priors_per_action = {
+            Action.ACCELERATE: 0,
+            Action.RIGHT: 0,
+            Action.LEFT: 0,
+            Action.BRAKE: 0,
+            Action.NOOP: 0,
+        }
+
+        super(ThirdOpponentRightFeature, self).__init__(rng=rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        kwargs['OPPONENT_INDEX'] = 1
+        cos_sim, isOpponentLeft, magnitude = self.get_angle_magnitude(**kwargs)
+
+        check = (isOpponentLeft is not None) and (not isOpponentLeft)
+
+        kwargs['cos_sim'] = cos_sim if check else None
+        kwargs['magnitude'] = magnitude if check else None
+
+        return super(ThirdOpponentRightFeature, self).getFeatureValue(cur_action, **kwargs)
