@@ -15,7 +15,7 @@ from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
     counter = 0
-    totalEpisodesCount = 20
+    totalEpisodesCount = 40
     seed = 16011984
     debugging = 0
     # if debugging == 0:
@@ -230,6 +230,6 @@ if __name__ == "__main__":
 
 
     # meanTotalRewards = mymain(bestComputationTemperature)
-    meanTotalRewards = mymain(computationalTemperature=1e-4)
+    meanTotalRewards = mymain()#computationalTemperature=1e-4
     print "meanTotalRewards"
     print meanTotalRewards
