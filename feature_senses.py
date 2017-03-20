@@ -10,7 +10,7 @@ from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
 from enduro_env import EnduroEnv
 from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
     SecondOpponentLeftFeature, SecondOpponentRightFeature
-from enduro_features.feature_base import ConstantBiasFeature
+from enduro_features.feature_base import ConstantBiasFeature, ConstantBiasPlainFeature
 
 
 class FeatureSenses(object):
@@ -21,27 +21,25 @@ class FeatureSenses(object):
 
         self.feature_class_list = [
             MoveFasterWhenLessThanAverageSpeed,
-            #MoveSlowerWhenMoreThanAverageSpeed,
+            # MoveSlowerWhenMoreThanAverageSpeed,
             # MoveLeftWhenRight,
             # MoveRightWhenLeft,
-            #FirstOpponentLeftFeature,
-            #FirstOpponentRightFeature,
-            #SecondOpponentLeftFeature,
-            #SecondOpponentRightFeature,
+            # FirstOpponentLeftFeature,
+            # FirstOpponentRightFeature,
+            # SecondOpponentLeftFeature,
+            # SecondOpponentRightFeature,
             # 'ThirdOpponentFeature',
-            ConstantBiasFeature,
+            # ConstantBiasFeature,
         ]
 
-        if hasattr(self, "getActionsSet"):
-            action_set = self.getActionsSet()
-        else:
-            raise AssertionError
-
-        originalFeatureLen = len(action_set) * len(self.feature_class_list)
+        self.plain_feature_class_list = [
+            ConstantBiasPlainFeature,
+        ]
 
         self.featureList = self.__generateFeatures()
 
         weight_priors = self.collectWeightPriors(self.featureList)
+        originalFeatureLen = self.getOriginalFeatureLen()
         assert originalFeatureLen == len(weight_priors)
 
         # self.initialTheta = Qcase.RANDOM
@@ -57,11 +55,19 @@ class FeatureSenses(object):
 
         self.sensor = Sensor(rng)
 
+    def getOriginalFeatureLen(self):
+        if hasattr(self, "getActionsSet"):
+            action_set = self.getActionsSet()
+        else:
+            raise AssertionError
+
+        return (len(action_set) * len(self.feature_class_list)) + len(self.plain_feature_class_list)
+
     @staticmethod
-    def collectWeightPriors(featureList):
+    def collectWeightPriors(feature_list):
         weight_priors = []
 
-        for featureInstance in featureList:
+        for featureInstance in feature_list:
             weight_priors.append(
                 featureInstance.getPrior()
             )
@@ -96,7 +102,7 @@ class FeatureSenses(object):
         # if all cars block us then we should brake
         # the higher the speed the higher the need to turn and the further away we look at the road
 
-        #AND non collissions should be taken into advantage
+        # AND non collissions should be taken into advantage
         return
 
     def stayingInTheCentreOfTheRoad(self, grid, action, road):
@@ -107,6 +113,7 @@ class FeatureSenses(object):
 
     def generateFeatures(self):
         self.featureList = self.__generateFeatures()
+        return self.featureList
 
     def __generateFeatures(self):
         if hasattr(self, "getActionsSet") and hasattr(self, "rng"):
@@ -116,11 +123,14 @@ class FeatureSenses(object):
 
             for cur_feat_class in self.feature_class_list:
                 for cur_action in action_set:
-                    featureInstance = cur_feat_class(
+                    featureInstances.append(cur_feat_class(
                         corresponding_action=cur_action, rng=self.rng
-                    )
+                    ))
 
-                    featureInstances.append(featureInstance)
+            for cur_plain_feat_class in self.plain_feature_class_list:
+                featureInstances.append(
+                    cur_plain_feat_class(rng=self.rng)
+                )
 
             return featureInstances
         else:

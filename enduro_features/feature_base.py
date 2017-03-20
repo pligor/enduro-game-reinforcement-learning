@@ -7,8 +7,35 @@ class WithFeatureValue(object):
     def getFeatureValue(self, cur_action, **kwargs):
         raise NotImplementedError
 
+class WithGetPrior(object):
+    def getPrior(self):
+        raise NotImplementedError
 
-class Feature(WithFeatureValue):
+class PlainFeature(WithFeatureValue, WithGetPrior):
+    def __init__(self):
+        super(PlainFeature, self).__init__()
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        return kwargs['value']
+
+    def getPrior(self):
+        if hasattr(self, "prior_weight"):
+            return self.prior_weight
+        else:
+            raise AssertionError
+
+
+class ConstantBiasPlainFeature(PlainFeature):
+    def __init__(self, rng):
+        self.prior_weight = 0.
+
+        super(ConstantBiasPlainFeature, self).__init__()
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        return super(ConstantBiasPlainFeature, self).getFeatureValue(cur_action, value=1)
+
+
+class Feature(WithFeatureValue, WithGetPrior):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
     def __init__(self):
