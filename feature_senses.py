@@ -21,13 +21,13 @@ class FeatureSenses(object):
 
         self.feature_class_list = [
             MoveFasterWhenLessThanAverageSpeed,
-            MoveSlowerWhenMoreThanAverageSpeed,
-            MoveLeftWhenRight,
-            MoveRightWhenLeft,
-            FirstOpponentLeftFeature,
-            FirstOpponentRightFeature,
-            SecondOpponentLeftFeature,
-            SecondOpponentRightFeature,
+            #MoveSlowerWhenMoreThanAverageSpeed,
+            # MoveLeftWhenRight,
+            # MoveRightWhenLeft,
+            #FirstOpponentLeftFeature,
+            #FirstOpponentRightFeature,
+            #SecondOpponentLeftFeature,
+            #SecondOpponentRightFeature,
             # 'ThirdOpponentFeature',
             ConstantBiasFeature,
         ]
@@ -63,7 +63,7 @@ class FeatureSenses(object):
 
         for featureInstance in featureList:
             weight_priors.append(
-                featureInstance.getPriorForCorrespondingAction()
+                featureInstance.getPrior()
             )
 
         return weight_priors
@@ -95,6 +95,8 @@ class FeatureSenses(object):
         # are we within the predicted range? If yes then we should turn outside of the range
         # if all cars block us then we should brake
         # the higher the speed the higher the need to turn and the further away we look at the road
+
+        #AND non collissions should be taken into advantage
         return
 
     def stayingInTheCentreOfTheRoad(self, grid, action, road):

@@ -32,7 +32,7 @@ class Feature(WithFeatureValue):
         else:
             raise AssertionError
 
-    def getPriorForCorrespondingAction(self):
+    def getPrior(self):
         if hasattr(self, "priors_per_action") and hasattr(self, "corresponding_action"):
             return self.priors_per_action[self.corresponding_action]
         else:

@@ -5,8 +5,8 @@ from feature_base import Feature, ContrainedFeature
 
 
 class MovingFasterResultsInPassingMoreCars(Feature):
-    default_rbf_wideness = 700
-    default_average_speed = 30
+    default_rbf_wideness = 1200  #700
+    default_average_speed = +50  #40, 30
 
     def __init__(self,
                  rbf_wideness=default_rbf_wideness, average_speed=default_average_speed):
