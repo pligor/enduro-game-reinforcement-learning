@@ -11,6 +11,8 @@ from enduro_env import EnduroEnv
 from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
     SecondOpponentLeftFeature, SecondOpponentRightFeature
 from enduro_features.feature_base import ConstantBiasFeature, ConstantBiasPlainFeature
+from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFarRightFeature, \
+    CountOppsNearLeftFeature, CountOppsNearRightFeature
 
 
 class FeatureSenses(object):
@@ -20,7 +22,12 @@ class FeatureSenses(object):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
-            MoveFasterWhenLessThanAverageSpeed,
+            CountOppsNearLeftFeature,
+            CountOppsNearRightFeature,
+            CountOppsFarLeftFeature,
+            CountOppsFarRightFeature,
+
+            #MoveFasterWhenLessThanAverageSpeed,
             # MoveSlowerWhenMoreThanAverageSpeed,
             # MoveLeftWhenRight,
             # MoveRightWhenLeft,

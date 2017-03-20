@@ -15,9 +15,9 @@ from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
     counter = 0
-    totalEpisodesCount = 60
+    totalEpisodesCount = 20
     seed = 16011984
-    debugging = 100
+    debugging = 0
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -160,7 +160,6 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         self.__curEnvironment = {
             "road": np.array(road), "cars": cars, "speed": speed, "grid": grid
         }
-        print "speed: {}".format(speed)
 
         self.curFeatureVectors = self.getFeatureVectorsForAllActions(prevEnv=self.__prevEnvironment,
                                                                      curEnv=self.__curEnvironment)
@@ -193,6 +192,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         if iteration % (100 if self.debugging == 0 else 1) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
+            print "speed: {}".format(self.__curEnvironment['speed'])
             if hasattr(self, "probs_debug") and self.probs_debug is not None:
                 print "probs debug: {}".format(self.probs_debug)
 
