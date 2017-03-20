@@ -12,8 +12,8 @@ class OpponentImpactFeature(ContrainedFeature, Feature):
         self.sensor = Sensor(rng)
         self.magnitude_constrainer = Constrainer(new_min=0, new_max=1)
 
-        #self.sum_cos_sim = 0.
-        #self.count_cos_sim = 0
+        # self.sum_cos_sim = 0.
+        # self.count_cos_sim = 0
         self.threshold_cos_sim = 0.5
 
     # def get_average_cos_sim(self, new_cos_sim):
@@ -41,17 +41,19 @@ class OpponentImpactFeature(ContrainedFeature, Feature):
         if cos_sim is None or magnitude is None:
             value = 0
         else:
-            cos_sim_clipped = cos_sim if cos_sim > 0 else 0.
+            cos_sim_clipped = cos_sim if cos_sim > 0.1 else 0.1
 
             contrained_magnitude = self.__getContrainedMagnitude(magnitude=magnitude)
 
             # print "cur cos sim {} and average cos sim {}".format(
             #     cos_sim, self.get_average_cos_sim(new_cos_sim=cos_sim_clipped))
 
+            inverse_cos_sim_clipped = 1 / cos_sim_clipped
+
             if cos_sim_clipped < self.threshold_cos_sim:
-                value = (1/cos_sim_clipped) * contrained_magnitude
+                value = inverse_cos_sim_clipped * contrained_magnitude
             else:
-                value = (1/cos_sim_clipped) * (1/contrained_magnitude)
+                value = inverse_cos_sim_clipped * (1. / contrained_magnitude)
 
         return super(OpponentImpactFeature, self).getFeatureValue(cur_action, value=value)
 
