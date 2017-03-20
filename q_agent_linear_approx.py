@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # from skopt import gp_minimize
 
 
-class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, SoftmaxActionSelection, KeyboardControl,
                          Agent):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
@@ -34,7 +34,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         self.keyboardControlEnabled = False
 
-        self.epsilon = 0.05
+        self.epsilon = 0.10
 
         # small more like max, large more like random, i.e 5e-3
         self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[
@@ -100,7 +100,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         super(QLinearApproxAgent, self).initialise(road=road, cars=cars, speed=speed, grid=grid)
 
         # we might need to generateFeatures because there might be some state that we don't want to keep
-        #self.generateFeatures()
+        # self.generateFeatures()
 
         self.total_reward = 0  # Reset the total reward for the episode
 
@@ -119,8 +119,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         self.episodeCounter += 1
 
-        # if self.debugging == 0:
-        #     print "computational temperature: %f" % self.computationalTemperature
+        if hasattr(self, "computationalTemperature"):
+            print "computational temperature: {}".format(self.computationalTemperature)
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -133,14 +133,15 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         Qs = self.getQbyS(self.prevFeatureVectors)
 
-        # def onProbs(probs):
-        #     if self.debugging > 0:
-        #         print ["%.3f" % p for p in probs]
-        #     else:
-        #         self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
-        # self.curAction = self.actionSelection(Qs, computationalTemperature=self.computationalTemperature, onProbs=onProbs)
+        def onProbs(probs):
+            if self.debugging > 0:
+                print ["%.3f" % p for p in probs]
+            else:
+                self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
 
-        self.curAction = self.selectActionByKeyboard() if self.keyboardControlEnabled else self.actionSelection(Qs)
+        self.curAction = self.selectActionByKeyboard() if self.keyboardControlEnabled else \
+            (self.actionSelection(Qs, computationalTemperature=self.computationalTemperature, onProbs=onProbs)
+             if hasattr(self, "computationalTemperature") else self.actionSelection(Qs))
 
         self.curReward = self.move(self.curAction)
         # self.curReward = -0.01 if self.curReward == 0 else self.curReward
@@ -192,8 +193,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         if iteration % (100 if self.debugging == 0 else 1) == 0:
             print "{0}/{1}: {2}".format(episode, iteration, self.total_reward)
             print Action.toString(self.curAction)
-            # if self.actionSelection == self.softmaxActionSelection_computationallySafe:
-            #     print self.probs_debug
+            if hasattr(self, "probs_debug") and self.probs_debug is not None:
+                print "probs debug: {}".format(self.probs_debug)
+
             # print self.prevFeatureVectors
             # print
             print self.thetaVector
@@ -228,6 +230,6 @@ if __name__ == "__main__":
 
 
     # meanTotalRewards = mymain(bestComputationTemperature)
-    meanTotalRewards = mymain()
+    meanTotalRewards = mymain(computationalTemperature=1e-4)
     print "meanTotalRewards"
     print meanTotalRewards
