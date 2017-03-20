@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 from enduro.action import Action
+from py_helper import Constrainer
 
 class WithFeatureValue(object):
     def getFeatureValue(self, cur_action, **kwargs):
@@ -38,32 +39,13 @@ class Feature(WithFeatureValue):
             raise AssertionError
 
 
-class ContrainedFeature(WithFeatureValue):
+class ContrainedFeature(Constrainer, WithFeatureValue):
     def __init__(self, new_min=-1, new_max=+1):
-        super(ContrainedFeature, self).__init__()
-        self.new_min = new_min
-        self.new_max = new_max
-        self.new_range = self.new_max - self.new_min
-
-        # start with the assumption that could be the same as our original ones
-        self.old_min = new_min
-        self.old_max = new_max
-
-    @property
-    def old_range(self):
-        return self.old_max - self.old_min
-
-    def constrain(self, old_value):
-        """http://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio"""
-        if self.old_range == 0:
-            return (self.new_min + self.new_max) / 2
-        else:
-            return (((old_value - self.old_min) * self.new_range) / self.old_range) + self.new_min
+        super(ContrainedFeature, self).__init__(new_min=new_min, new_max=new_max)
 
     def getFeatureValue(self, cur_action, **kwargs):
         cur_value = kwargs['value']
-        self.old_max = max(self.old_max, cur_value)
-        self.old_min = min(self.old_min, cur_value)
+        self.old_range = cur_value
 
         #print "cur value {}".format(cur_value)
 

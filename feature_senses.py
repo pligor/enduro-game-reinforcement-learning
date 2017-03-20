@@ -7,7 +7,8 @@ from enduro.action import Action
 from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
 from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
-
+from enduro_env import EnduroEnv
+from enduro_features.opponent_impact import FirstOpponentFeature
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -19,8 +20,8 @@ class FeatureSenses(object):
             MoveFasterWhenLessThanAverageSpeed,
             MoveSlowerWhenMoreThanAverageSpeed,
             MoveLeftWhenRight,
-            MoveRightWhenLeft
-            # 'FirstOpponentFeature',
+            MoveRightWhenLeft,
+            FirstOpponentFeature,
             # 'SecondOpponentFeature',
             # 'ThirdOpponentFeature',
             # 'ConstantBiasFeature'
@@ -107,53 +108,17 @@ class FeatureSenses(object):
         if prevEnv is None:
             return np.zeros(self.featureLen)
         else:
-            cars = curEnv['cars']
-            road = np.array(curEnv['road'])
-            grid = curEnv['grid']
 
-            def loop_road(coords_opp):
-                """the other idea is to split it in four sections and the winner section to even four"""
-                prev_row = None
-                for rr, row in enumerate(road):
-                    prev_col = None  # (0,0)
-                    for cc, col in enumerate(row):
-                        # (col[1] > coords_opp[1] > prev_col[1]):
-                        if prev_row is not None and prev_col is not None:
-
-                            # print (prev_row[cc][0], col[0])
-                            if (prev_col[0] <= coords_opp[0] <= col[0]) and \
-                                    (prev_row[cc][1] <= coords_opp[1] <= col[1]):
-                                return rr, cc
-                        #
-                        # if prev_col is None:
-                        #
-                        #     pass
-                        # else:
-                        #     if coords_opp[0] > col[0] and prev_col[1] < coords_opp[1] < col[1]:
-                        #         return rr, cc
-                        prev_col = col
-                    prev_row = row
-
-            opponents = cars['others']
-
-            if len(opponents) > 0:
-                # print road[0]
-                print grid
-
-            for opp in opponents:
-                coords_opponent = opp[:2]
-                print coords_opponent
-                tpl = loop_road(coords_opp=coords_opponent)
-                xx = 11 - (tpl[0])
-                print "loop road {}".format(tpl)
-                #print grid[xx]
-                min_xx = max(0, xx-1)
-                max_xx = min(11, xx+2)
-                #print xx, min_xx, max_xx
-                #print grid[min_xx:max_xx]
-                assert np.any(grid[min_xx:max_xx] == 1)
-                #print road[tpl[0]]
-                # print road[tpl[0] + 1]
+            # cars = curEnv['cars']
+            # road = np.array(curEnv['road'])
+            # grid = curEnv['grid']
+            # opponents = cars['others']
+            #
+            # if len(opponents) > 0:
+            #     # print road[0]
+            #     print grid
+            #
+            # EnduroEnv().detectOpponentsInTheGrid(opponents, grid, road)
 
             # according to theory the state corresponds to the grid AFTER the action is taken
             # (distanceFromCentre, opponentsBeside, howMuchRoadTurning) = self.stayingInTheCentreOfTheRoad(

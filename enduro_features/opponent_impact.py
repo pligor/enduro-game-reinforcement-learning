@@ -3,12 +3,17 @@ import numpy as np
 from enduro.action import Action
 from sensor import Sensor
 from feature_base import ContrainedFeature, Feature
-
+from py_helper import Constrainer
 
 class OpponentImpactFeature(ContrainedFeature, Feature):
     def __init__(self, rng):
         super(OpponentImpactFeature, self).__init__()
         self.sensor = Sensor(rng)
+        self.magnitude_constrainer = Constrainer(new_min=0, new_max=1)
+
+    def __getContrainedMagnitude(self, magnitude):
+        self.magnitude_constrainer.old_range = magnitude
+        return self.magnitude_constrainer.constrain(magnitude)
 
     def getFeatureValue(self, cur_action, **kwargs):
         OPPONENT_INDEX = kwargs['OPPONENT_INDEX']
@@ -16,9 +21,13 @@ class OpponentImpactFeature(ContrainedFeature, Feature):
         # cos_sim, isOpponentLeft = self.sensor.getAngleOfOpponentFromEnv(
         #     cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
         # )
+
         cos_sim, isOpponentLeft, magnitude = self.sensor.getAngleAndMagnitudeOfOpponentFromEnv(
             cars=kwargs['cars'], road=kwargs['road'], opp_index=OPPONENT_INDEX
         )
+
+        contrained_magnitude = self.__getContrainedMagnitude(magnitude=magnitude)
+        print "magn {} and contrain magn {}".format(magnitude, contrained_magnitude)
 
         cos_sim_clipped = cos_sim if cos_sim > 0 else 0
 

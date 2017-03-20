@@ -17,7 +17,7 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 40
     seed = 16011984
-    debugging = 500
+    debugging = 1000
     #if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
