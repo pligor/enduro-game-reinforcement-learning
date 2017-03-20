@@ -6,6 +6,7 @@ from sensor import Sensor
 from enduro.action import Action
 from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
+from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -16,6 +17,8 @@ class FeatureSenses(object):
         feature_class_list = [
             MoveFasterWhenLessThanAverageSpeed,
             MoveSlowerWhenMoreThanAverageSpeed,
+            MoveLeftWhenRight,
+            MoveRightWhenLeft
             # 'FirstOpponentFeature',
             # 'SecondOpponentFeature',
             # 'ThirdOpponentFeature',
@@ -77,7 +80,6 @@ class FeatureSenses(object):
 
     def stayingInTheCentreOfTheRoad(self, grid, action, road):
         return (
-            self.sensor.distanceFromCentre(grid=grid, action=action),
             self.sensor.opponentsBeside(grid=grid, action=action),
             self.sensor.howMuchRoadTurning(road=road, action=action)
         )
@@ -132,7 +134,8 @@ class FeatureSenses(object):
                     featureInstance.getFeatureValue(cur_action=action,
                                                     speed=curEnv['speed'],
                                                     cars=curEnv['cars'],
-                                                    road=curEnv['road'])
+                                                    road=curEnv['road'],
+                                                    grid=curEnv['grid'])
                 )
 
             featureValuesVector = np.array(featureValuesVector)

@@ -213,7 +213,7 @@ class Sensor(Sense):
 
         raise AssertionError  # an unexpected action was used
 
-    def distanceFromCentre(self, grid, action, factor=2.):
+    def distanceFromCentre(self, grid):
         # being in the centre [4 or 5 position] we need the highest value, the lowest value at the edges
         # 4.5 - 0 = 4.5, 4.5 - 9 = -4.5, while 4.5 - 4 = 0.5 and 4.5 - 5 = -0.5
         # if negative means we are on the right, action Left should bring it a larger value, action Right a smaller
@@ -223,18 +223,8 @@ class Sensor(Sense):
         middlePos = (self.gridWidth - 1) / 2.
         distance = middlePos - carPos
         areWeOnTheRight = distance < 0
-        areWeOnTheLeft = not areWeOnTheRight
 
-        distance **= 2
-
-        if (areWeOnTheRight and action == Action.RIGHT) or (areWeOnTheLeft and action == Action.LEFT):
-            return distance / factor
-        elif (areWeOnTheRight and action == Action.LEFT) or (areWeOnTheLeft and action == Action.RIGHT):
-            return distance * factor
-        else:
-            return distance
-
-            ####################################################################################################################
+        return abs(distance), areWeOnTheRight
 
 
 if __name__ == "__main__":
