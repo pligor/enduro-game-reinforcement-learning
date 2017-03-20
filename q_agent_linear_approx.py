@@ -17,10 +17,11 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 40
     seed = 16011984
-    debugging = 1000
-    #if debugging == 0:
+    debugging = 300
+    # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
+
 
 class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
                          Agent):
@@ -97,6 +98,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
     def initialise(self, road, cars, speed, grid):
         """Called at the beginning of an episode. Use it to construct the initial state."""
         super(QLinearApproxAgent, self).initialise(road=road, cars=cars, speed=speed, grid=grid)
+
+        # TODO we might need to generateFeatures because there might be some state that we don't want to keep
 
         self.total_reward = 0  # Reset the total reward for the episode
 
@@ -192,7 +195,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             # print self.prevFeatureVectors
             # print
             print self.thetaVector
-            #print self.curFeatureVectors
+            # print self.curFeatureVectors
             print
 
         if self.debugging > 0 and learn:
@@ -216,7 +219,7 @@ if __name__ == "__main__":
         total_rewards, _ = agent.getRewardInfo()
         print total_rewards
 
-        #print agent.storeRewardInfo()
+        # print agent.storeRewardInfo()
         # TO DO np.save(agent.middlefix + "_bellmanQ", agent.bellmanQ)
 
         return np.mean(total_rewards)

@@ -8,7 +8,9 @@ from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed
 from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
 from enduro_env import EnduroEnv
-from enduro_features.opponent_impact import FirstOpponentFeature
+from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature
+from enduro_features.feature_base import ConstantBiasFeature
+
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -16,42 +18,33 @@ class FeatureSenses(object):
     def __init__(self, rng):
         self.nonLinearitiesEnabled = False
 
-        feature_class_list = [
+        self.feature_class_list = [
             MoveFasterWhenLessThanAverageSpeed,
             MoveSlowerWhenMoreThanAverageSpeed,
             MoveLeftWhenRight,
             MoveRightWhenLeft,
-            FirstOpponentFeature,
+            FirstOpponentLeftFeature,
+            FirstOpponentRightFeature,
             # 'SecondOpponentFeature',
             # 'ThirdOpponentFeature',
-            # 'ConstantBiasFeature'
+            ConstantBiasFeature,
         ]
-
-        weight_priors = []
-
-        self.featureList = self.__generateFeatures(feature_class_list=feature_class_list)
-
-        for featureInstance in self.featureList:
-            weight_priors.append(
-                featureInstance.getPriorForCorrespondingAction()
-            )
 
         if hasattr(self, "getActionsSet"):
             action_set = self.getActionsSet()
         else:
             raise AssertionError
 
-        originalFeatureLen = len(action_set) * len(feature_class_list)
+        originalFeatureLen = len(action_set) * len(self.feature_class_list)
+
+        self.featureList = self.__generateFeatures()
+
+        weight_priors = self.collectWeightPriors(self.featureList)
         assert originalFeatureLen == len(weight_priors)
 
         # self.initialTheta = Qcase.RANDOM
-        def changeWeights(vector):
-            vector[:originalFeatureLen] = weight_priors
-            # fill the rest with random values
-            vector[vector == 0] = rng.randn(len(vector[vector == 0]))
-            return vector
-
-        self.initialTheta = changeWeights
+        self.initialTheta = self.getChangeWeightsCallback(originalFeatureLen=originalFeatureLen,
+                                                          weight_priors=weight_priors, rng=rng)
 
         if self.nonLinearitiesEnabled:
             self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
@@ -59,7 +52,29 @@ class FeatureSenses(object):
             self.featureLen = originalFeatureLen
 
         super(FeatureSenses, self).__init__()
+
         self.sensor = Sensor(rng)
+
+    @staticmethod
+    def collectWeightPriors(featureList):
+        weight_priors = []
+
+        for featureInstance in featureList:
+            weight_priors.append(
+                featureInstance.getPriorForCorrespondingAction()
+            )
+
+        return weight_priors
+
+    @staticmethod
+    def getChangeWeightsCallback(originalFeatureLen, weight_priors, rng):
+        def changeWeights(vector):
+            vector[:originalFeatureLen] = weight_priors
+            # fill the rest with random values
+            vector[vector == 0] = rng.randn(len(vector[vector == 0]))
+            return vector
+
+        return changeWeights
 
     def getFeatureVectorsForAllActions(self, prevEnv, curEnv):
         if hasattr(self, "getActionsSet"):
@@ -86,13 +101,16 @@ class FeatureSenses(object):
             self.sensor.howMuchRoadTurning(road=road, action=action)
         )
 
-    def __generateFeatures(self, feature_class_list):
+    def generateFeatures(self):
+        self.featureList = self.__generateFeatures()
+
+    def __generateFeatures(self):
         if hasattr(self, "getActionsSet") and hasattr(self, "rng"):
             action_set = self.getActionsSet()
 
             featureInstances = []
 
-            for cur_feat_class in feature_class_list:
+            for cur_feat_class in self.feature_class_list:
                 for cur_action in action_set:
                     featureInstance = cur_feat_class(
                         corresponding_action=cur_action, rng=self.rng

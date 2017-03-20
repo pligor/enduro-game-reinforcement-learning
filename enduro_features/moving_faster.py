@@ -4,7 +4,7 @@ from enduro.action import Action
 from feature_base import Feature, ContrainedFeature
 
 
-class MovingFasterResultsInPassingMoreCars(ContrainedFeature, Feature):
+class MovingFasterResultsInPassingMoreCars(Feature):
     default_rbf_wideness = 700
     default_average_speed = 30
 
@@ -15,7 +15,9 @@ class MovingFasterResultsInPassingMoreCars(ContrainedFeature, Feature):
         self.rbf_wideness = rbf_wideness
 
     def rbfFunc(self, x):
-        return np.exp(-((x - self.average_speed) ** 2) / self.rbf_wideness)
+        value = np.exp(-((x - self.average_speed) ** 2) / self.rbf_wideness)
+        assert value < 1.1
+        return value
 
     def getFeatureValue(self, cur_action, **kwargs):
         speed = kwargs['speed']

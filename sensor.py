@@ -18,7 +18,7 @@ class Sensor(Sense):
     def getAngleAndMagnitudeOfOpponentFromEnv(self, cars, road, opp_index):
         self_vec = cars['self'][:2]
 
-        invalid = (0, None, 0)
+        invalid = (None, None, None)
 
         if "others" in cars:
             opponents = cars['others']
