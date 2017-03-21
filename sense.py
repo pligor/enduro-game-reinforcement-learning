@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 from enduro.action import Action
 from road_category import RoadCategory
@@ -5,6 +6,8 @@ from extreme_position import ExtremePosition
 from how_many_opponents import HowManyOpponents
 
 class Sense(object):
+    opponent_symbol = 1
+
     def __init__(self, rng, gridLength = 11, gridWidth = 10):
         self.rng = rng
         self.gridLength = gridLength
@@ -239,12 +242,28 @@ class Sense(object):
     def countOpponents(self, grid, left_boolean):
         assert self.gridWidth % 2 == 0
         targetArea = grid[1:, :self.gridWidth/2] if left_boolean else grid[1:, self.gridWidth/2:]
-        count = np.sum(targetArea == 1)
+        count = np.sum(targetArea == self.opponent_symbol)
         howManyOpponents = HowManyOpponents()
         if count > howManyOpponents.maxcount:
             return howManyOpponents.many
         else:
             return str(count)
+
+    def countOppsInFrontOfCar(self, grid, carPos, howFar, width = 3):
+        assert self.gridWidth % 2 == 0
+        howFar = int(howFar)
+        assert 0 <= howFar < self.gridLength
+        startFrom = 1
+
+        assert width % 2 == 1, "only odd (symmetric around the car) widths are accepted"
+        extraCols = width // 2
+
+        fromCol = max(carPos - extraCols, 0)
+        toCol = min(carPos + extraCols, self.gridWidth)
+
+        targetArea = grid[startFrom:(howFar+1), fromCol:toCol]
+
+        return np.sum(targetArea == self.opponent_symbol)
 
     def countOppsVarLen(self, grid, left_boolean, howFar, startFrom = 0):
         assert self.gridWidth % 2 == 0
@@ -256,7 +275,7 @@ class Sense(object):
         targetArea = grid[startFrom:(howFar+1), :self.gridWidth/2] if left_boolean else \
             grid[startFrom:(howFar+1), self.gridWidth/2:]
 
-        return np.sum(targetArea == 1)
+        return np.sum(targetArea == self.opponent_symbol)
 
 if __name__ == "__main__":
     seed = 16011984

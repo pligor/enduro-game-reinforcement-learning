@@ -1,12 +1,41 @@
 from __future__ import division
 import numpy as np
 from enduro.action import Action
-from feature_base import Feature, ContrainedFeature
+from feature_base import Feature, ContrainedFeature, PlainFeature
+from sensor import Sensor
+
+class GoOrBrakePlainFeature(PlainFeature):
+    def __init__(self, rng):
+        self.prior_weight = 1.
+
+        self.sensor = Sensor(rng=rng)
+        self.how_far = 10
+
+        super(GoOrBrakePlainFeature, self).__init__()
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        grid = kwargs['grid']
+
+        carPos = self.sensor.getOurCarPos(grid=grid)
+        oppsCount = self.sensor.countOppsInFrontOfCar(grid=grid, carPos=carPos, howFar=self.how_far)
+
+        if cur_action == Action.ACCELERATE and oppsCount == 0:
+            value = 10
+        elif cur_action == Action.ACCELERATE and oppsCount > 0:
+            value = -1
+        elif cur_action == Action.BRAKE and oppsCount > 0:
+            value = 1
+        elif cur_action == Action.BRAKE and oppsCount == 0:
+            value = -10
+        else:
+            value = 0
+
+        return super(GoOrBrakePlainFeature, self).getFeatureValue(cur_action, value=value)
 
 
 class MovingFasterResultsInPassingMoreCars(Feature):
-    default_rbf_wideness = 1200  #700
-    default_average_speed = 50  #40, 30
+    default_rbf_wideness = 1200  # 700
+    default_average_speed = 50  # 40, 30
 
     def __init__(self,
                  rbf_wideness=default_rbf_wideness, average_speed=default_average_speed):
