@@ -15,9 +15,9 @@ from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
     counter = 0
-    totalEpisodesCount = 40
+    totalEpisodesCount = 100
     seed = 16011984
-    debugging = 200
+    debugging = 0
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -37,9 +37,11 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         self.epsilon = 0.10
 
         # small more like max, large more like random, i.e 5e-3
-        self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[
+        self.computationalTemperatureSpace = np.logspace(-3, 20, totalEpisodesCount)[
                                              ::-1] if computationalTemperature is None else \
             np.repeat(computationalTemperature, totalEpisodesCount)
+
+        #print "comp temp space {}".format(self.computationalTemperatureSpace)
 
         self.debugging = debugging  # zero for actual run
         self.gamma = 0.9
@@ -230,6 +232,6 @@ if __name__ == "__main__":
 
 
     # meanTotalRewards = mymain(bestComputationTemperature)
-    meanTotalRewards = mymain()#computationalTemperature=1e-4
+    meanTotalRewards = mymain()  # computationalTemperature=1e-4
     print "meanTotalRewards"
     print meanTotalRewards

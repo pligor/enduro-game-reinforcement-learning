@@ -5,7 +5,8 @@ from feature_base import Feature, ContrainedFeature
 from sensor import Sensor
 from scipy.stats import multivariate_normal as mvnorm
 
-class GaussianThreatFeature(Feature):  #ContrainedFeature
+
+class GaussianThreatFeature(Feature):  # ContrainedFeature
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
@@ -22,11 +23,11 @@ class GaussianThreatFeature(Feature):  #ContrainedFeature
         cov_magnitude = 3  # small more peaky, large more take into account the neighborhood
 
         self.row_max_threat = 2
-        self.FRONT_ROW = 1  #this is capital because it is a constant really
+        self.FRONT_ROW = 1  # this is capital because it is a constant really
 
-        self.cov = np.array([[cov_magnitude, 0], [0, cov_magnitude]])  #no correlation between axes
+        self.cov = np.array([[cov_magnitude, 0], [0, cov_magnitude]])  # no correlation between axes
 
-        super(GaussianThreatFeature, self).__init__()  #rng=rng
+        super(GaussianThreatFeature, self).__init__()  # rng=rng
 
     def __getPDFgaussian(self, carPos, oppCoords):
         mean = np.array([self.row_max_threat, carPos])
@@ -41,9 +42,12 @@ class GaussianThreatFeature(Feature):  #ContrainedFeature
         total_threat = 0
 
         for opp_coords in opponents_coords:
-            if opp_coords[0] >= self.FRONT_ROW: # considering ONLY opponents from row 1 and beyond
+            if opp_coords[0] >= self.FRONT_ROW:  # considering ONLY opponents from row 1 and beyond
                 total_threat += self.__getPDFgaussian(carPos=carPos, oppCoords=opp_coords)
 
         total_value = -total_threat
+        q_value = super(GaussianThreatFeature, self).getFeatureValue(cur_action, value=total_value)
 
-        return super(GaussianThreatFeature, self).getFeatureValue(cur_action, value=total_value)
+        #print "q value {}".format(q_value)
+
+        return q_value

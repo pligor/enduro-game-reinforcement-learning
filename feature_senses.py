@@ -186,6 +186,7 @@ class FeatureSenses(object):
             featureValuesVector = []
 
             for featureInstance in self.featureList:
+                #print type(featureInstance)
                 featureValuesVector.append(
                     featureInstance.getFeatureValue(cur_action=action,
                                                     speed=curEnv['speed'],

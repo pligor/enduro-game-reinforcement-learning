@@ -19,11 +19,11 @@ class MoveRightWhenLeft(BeingInTheCentreIsBetter):
         self.corresponding_action = corresponding_action
 
         self.priors_per_action = {
-            Action.ACCELERATE: 1,
-            Action.RIGHT: 9,
-            Action.LEFT: -8,
-            Action.BRAKE: 1,
-            Action.NOOP: 1,
+            Action.ACCELERATE: 0.1,
+            Action.RIGHT: 0.9,
+            Action.LEFT: -0.8,
+            Action.BRAKE: 0.1,
+            Action.NOOP: 0.1,
         }
 
         super(MoveRightWhenLeft, self).__init__(rng=rng)
@@ -40,11 +40,11 @@ class MoveLeftWhenRight(BeingInTheCentreIsBetter):
         self.corresponding_action = corresponding_action
 
         self.priors_per_action = {
-            Action.ACCELERATE: 1,
-            Action.RIGHT: -8,
-            Action.LEFT: 9,
-            Action.BRAKE: 1,
-            Action.NOOP: 1,
+            Action.ACCELERATE: 0.1,
+            Action.RIGHT: -0.8,
+            Action.LEFT: 0.9,
+            Action.BRAKE: 0.1,
+            Action.NOOP: 0.1,
         }
 
         super(MoveLeftWhenRight, self).__init__(rng=rng)

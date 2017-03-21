@@ -48,12 +48,14 @@ class SoftmaxActionSelection(ActionSelection):
     def __init__(self):
         super(SoftmaxActionSelection, self).__init__()
 
-        self.__episodeCounter = 0
-
     @property
     def computationalTemperature(self):
-        if hasattr(self, 'computationalTemperatureSpace'):
-            return self.computationalTemperatureSpace[self.__episodeCounter - 1]
+        if hasattr(self, 'computationalTemperatureSpace') and hasattr(self, "episodeCounter"):
+            ind = self.episodeCounter - 1
+            assert ind >= 0
+            compTemp = self.computationalTemperatureSpace[ind]
+            #print 'computationalTemperature {}'.format(compTemp)
+            return compTemp
         else:
             raise AssertionError
 
