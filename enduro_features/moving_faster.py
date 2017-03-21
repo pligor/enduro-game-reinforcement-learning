@@ -6,7 +6,7 @@ from sensor import Sensor
 
 class GoOrBrakePlainFeature(PlainFeature):
     def __init__(self, rng):
-        self.prior_weight = 1.
+        self.prior_weight = 10.
 
         self.sensor = Sensor(rng=rng)
         self.how_far = 10
