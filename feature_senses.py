@@ -30,10 +30,10 @@ class FeatureSenses(object):
             #CountOppsFarLeftFeature,
             #CountOppsFarRightFeature,
 
-            #MoveFasterWhenLessThanAverageSpeed,
+            MoveFasterWhenLessThanAverageSpeed,
             # MoveSlowerWhenMoreThanAverageSpeed,
-            # MoveLeftWhenRight,
-            # MoveRightWhenLeft,
+            MoveLeftWhenRight,
+            MoveRightWhenLeft,
             # FirstOpponentLeftFeature,
             # FirstOpponentRightFeature,
             # SecondOpponentLeftFeature,

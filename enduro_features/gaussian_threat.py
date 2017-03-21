@@ -10,11 +10,11 @@ class GaussianThreatFeature(Feature):  #ContrainedFeature
         self.corresponding_action = corresponding_action
 
         self.priors_per_action = {
-            Action.ACCELERATE: -10,
-            Action.RIGHT: 20,
-            Action.LEFT: 20,
-            Action.BRAKE: 10,
-            Action.NOOP: 5,
+            Action.ACCELERATE: -1,
+            Action.RIGHT: 2.,
+            Action.LEFT: 2.,
+            Action.BRAKE: 1.,
+            Action.NOOP: 0.5,
         }
 
         self.sensor = Sensor(rng=rng)

@@ -6,7 +6,7 @@ from feature_base import Feature, ContrainedFeature
 
 class MovingFasterResultsInPassingMoreCars(Feature):
     default_rbf_wideness = 1200  #700
-    default_average_speed = +50  #40, 30
+    default_average_speed = 50  #40, 30
 
     def __init__(self,
                  rbf_wideness=default_rbf_wideness, average_speed=default_average_speed):
@@ -16,7 +16,7 @@ class MovingFasterResultsInPassingMoreCars(Feature):
 
     def rbfFunc(self, x):
         value = np.exp(-((x - self.average_speed) ** 2) / self.rbf_wideness)
-        assert value < 1.1
+        assert value < 1.01
         return value
 
     def getFeatureValue(self, cur_action, **kwargs):
@@ -30,20 +30,26 @@ class MoveFasterWhenLessThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
         self.corresponding_action = corresponding_action
 
         self.priors_per_action = {
-            Action.ACCELERATE: 9,
-            Action.RIGHT: 1,
-            Action.LEFT: 1,
-            Action.BRAKE: -8,
-            Action.NOOP: 1,
+            Action.ACCELERATE: 0.9,
+            Action.RIGHT: 0.1,
+            Action.LEFT: 0.1,
+            Action.BRAKE: -0.8,
+            Action.NOOP: 0.1,
         }
 
         super(MoveFasterWhenLessThanAverageSpeed, self).__init__()
 
     def getFeatureValue(self, cur_action, **kwargs):
-        isSlowerThanAverage = kwargs['speed'] < self.average_speed
-        # return 0
-        return super(MoveFasterWhenLessThanAverageSpeed, self).getFeatureValue(cur_action, **kwargs) \
-            if isSlowerThanAverage else 0  # does not play role if
+        isSlowerThanAverage = kwargs['speed'] <= self.average_speed
+
+        qValue = super(MoveFasterWhenLessThanAverageSpeed, self).getFeatureValue(cur_action, **kwargs) \
+            if isSlowerThanAverage else 0
+
+        if self.average_speed >= 50 and self.corresponding_action == cur_action:
+            assert qValue != 0, "q value is: {} and boolean: {} and speed: {}".format(
+                qValue, isSlowerThanAverage, kwargs['speed'])
+
+        return qValue
 
 
 class MoveSlowerWhenMoreThanAverageSpeed(MovingFasterResultsInPassingMoreCars):

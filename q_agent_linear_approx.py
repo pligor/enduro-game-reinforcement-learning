@@ -17,7 +17,7 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 40
     seed = 16011984
-    debugging = 0
+    debugging = 200
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -135,7 +135,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
 
         def onProbs(probs):
             if self.debugging > 0:
-                print ["%.3f" % p for p in probs]
+                print "probs debug: {}".format(["%.3f" % p for p in probs])
             else:
                 self.probs_debug = ["%.3f" % p for p in probs], ["%.1f" % p for p in Qs]
 
@@ -198,7 +198,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
 
             # print self.prevFeatureVectors
             # print
-            print self.thetaVector
+            print "theta vector: {}".format(self.thetaVector)
             # print self.curFeatureVectors
             print
 
