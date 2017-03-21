@@ -14,7 +14,7 @@ from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOppon
 from enduro_features.feature_base import ConstantBiasFeature, ConstantBiasPlainFeature
 from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFarRightFeature, \
     CountOppsNearLeftFeature, CountOppsNearRightFeature
-from enduro_features.gaussian_threat import GaussianThreatFeature
+from enduro_features.gaussian_threat import GaussianThreatLeftFeature, GaussianThreatRightFeature
 
 
 class FeatureSenses(object):
@@ -24,7 +24,8 @@ class FeatureSenses(object):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
-            GaussianThreatFeature,
+            GaussianThreatLeftFeature,
+            GaussianThreatRightFeature,
 
             #CountOppsNearLeftFeature,
             #CountOppsNearRightFeature,

@@ -37,7 +37,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         self.epsilon = 0.10
 
         # small more like max, large more like random, i.e 5e-3
-        self.computationalTemperatureSpace = np.logspace(-4, -2, totalEpisodesCount)[
+        self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[
                                              ::-1] if computationalTemperature is None else \
             np.repeat(computationalTemperature, totalEpisodesCount)
 

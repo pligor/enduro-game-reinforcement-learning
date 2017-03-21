@@ -10,17 +10,11 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: -1,
-            Action.RIGHT: 2.,
-            Action.LEFT: 2.,
-            Action.BRAKE: 1.,
-            Action.NOOP: 0.5,
-        }
+        self.priors_per_action = self.getPriorsPerAction()
 
         self.sensor = Sensor(rng=rng)
 
-        cov_magnitude = 3  # small more peaky, large more take into account the neighborhood
+        cov_magnitude = 4  # small more peaky, large more take into account the neighborhood
 
         self.row_max_threat = 2
         self.FRONT_ROW = 1  # this is capital because it is a constant really
@@ -29,15 +23,27 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
 
         super(GaussianThreatFeature, self).__init__()  # rng=rng
 
+    def getPriorsPerAction(self):
+        return {
+            Action.ACCELERATE: -1.,
+            Action.RIGHT: 20.,
+            Action.LEFT: 20.,
+            Action.BRAKE: 10.,
+            Action.NOOP: 5,
+        }
+
     def __getPDFgaussian(self, carPos, oppCoords):
         mean = np.array([self.row_max_threat, carPos])
 
         return mvnorm.pdf(oppCoords, mean=mean, cov=self.cov)
 
+    def get_opps_coords(self, grid, carPos):
+        return self.sensor.getOpponentsCoords(grid=grid)
+
     def getFeatureValue(self, cur_action, **kwargs):
         grid = kwargs['grid']
-        opponents_coords = self.sensor.getOpponentsCoords(grid=grid)
         carPos = self.sensor.getOurCarPos(grid)
+        opponents_coords = self.get_opps_coords(grid=grid, carPos=carPos)
 
         total_threat = 0
 
@@ -48,6 +54,43 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
         total_value = -total_threat
         q_value = super(GaussianThreatFeature, self).getFeatureValue(cur_action, value=total_value)
 
-        #print "q value {}".format(q_value)
+        # print "q value {}".format(q_value)
 
         return q_value
+
+
+class GaussianThreatLeftFeature(GaussianThreatFeature):  # ContrainedFeature
+    def __init__(self, corresponding_action, rng):
+        super(GaussianThreatLeftFeature, self).__init__(
+            corresponding_action=corresponding_action, rng=rng)
+
+    def get_opps_coords(self, grid, carPos):
+        opps_coords = self.sensor.getOpponentsCoords(grid=grid)
+        return opps_coords[np.argwhere(opps_coords[:, 1] <= carPos).flatten()]
+
+    def getPriorsPerAction(self):
+        return {
+            Action.ACCELERATE: -1.,
+            Action.RIGHT: 20.,
+            Action.LEFT: -20.,
+            Action.BRAKE: 10.,
+            Action.NOOP: 5,
+        }
+
+class GaussianThreatRightFeature(GaussianThreatFeature):  # ContrainedFeature
+    def __init__(self, corresponding_action, rng):
+        super(GaussianThreatRightFeature, self).__init__(
+            corresponding_action=corresponding_action, rng=rng)
+
+    def get_opps_coords(self, grid, carPos):
+        opps_coords = self.sensor.getOpponentsCoords(grid=grid)
+        return opps_coords[np.argwhere(opps_coords[:, 1] >= carPos).flatten()]
+
+    def getPriorsPerAction(self):
+        return {
+            Action.ACCELERATE: -1.,
+            Action.RIGHT: -20.,
+            Action.LEFT: 20.,
+            Action.BRAKE: 10.,
+            Action.NOOP: 5,
+        }
