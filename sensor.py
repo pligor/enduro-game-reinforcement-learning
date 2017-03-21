@@ -15,6 +15,10 @@ class Sensor(Sense):
         self.roadLength = self.gridLength + 1
         self.roadWidth = self.gridWidth + 1
 
+    @staticmethod
+    def getOpponentsCoords(grid):
+        return np.argwhere(grid == 1)
+
     def getAngleAndMagnitudeOfOpponentFromEnv(self, cars, road, opp_index):
         self_vec = cars['self'][:2]
 
