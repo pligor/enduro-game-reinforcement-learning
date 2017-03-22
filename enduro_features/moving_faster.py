@@ -4,6 +4,7 @@ from enduro.action import Action
 from feature_base import Feature, ContrainedFeature, PlainFeature
 from sensor import Sensor
 from collections import OrderedDict
+from py_helper import Constrainer
 
 
 class WithRbfFunc(object):  # We have verified that rbf func always returns below 1 so ok
@@ -19,6 +20,47 @@ class WithRbfFunc(object):  # We have verified that rbf func always returns belo
         value = np.exp(-((x - self.average_speed) ** 2) / self.rbf_wideness)
         # assert value < 1.01
         return value
+
+class RelativeSpeedJustFasterPlainFeature(Constrainer, PlainFeature):
+    def __init__(self, rng):
+        self.prior_weight = 10.
+
+        self.optimal_speed = 1.
+
+        self.sensor = Sensor(rng=rng)
+
+        super(RelativeSpeedJustFasterPlainFeature, self).__init__(new_min=0.,new_max=1.)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        grid = kwargs['grid']
+        prevGrid = kwargs['prevGrid']
+
+        estimatedSpeed = self.sensor.getEstimatedSpeed(prevGrid=prevGrid, grid=grid)
+        #print "estimatedSpeed {}".format(estimatedSpeed)
+
+        if estimatedSpeed is None:
+            value = 0.
+        else:
+            self.old_range = estimatedSpeed
+
+            # print "cur value {}".format(cur_value)
+
+            scaled_estimated_speed = self.constrain(estimatedSpeed)
+
+            if cur_action == Action.ACCELERATE and estimatedSpeed < self.optimal_speed:
+                value = scaled_estimated_speed
+            elif cur_action == Action.ACCELERATE and estimatedSpeed > self.optimal_speed:
+                value = -0.5 * scaled_estimated_speed
+
+            elif cur_action == Action.BRAKE and estimatedSpeed < self.optimal_speed:
+                value = -scaled_estimated_speed
+            elif cur_action == Action.BRAKE and estimatedSpeed > self.optimal_speed:
+                value = 0.2 * scaled_estimated_speed
+
+            else:
+                value = 0.
+
+        return super(RelativeSpeedJustFasterPlainFeature, self).getFeatureValue(cur_action, value=value)
 
 
 class GoOrBrakePlainFeature(PlainFeature):

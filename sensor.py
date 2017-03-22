@@ -7,6 +7,8 @@ from extreme_position import ExtremePosition
 from how_many_opponents import HowManyOpponents
 from sense import Sense
 from sklearn.metrics.pairwise import cosine_distances, cosine_similarity
+from sys import maxint
+from itertools import permutations
 
 
 class Sensor(Sense):
@@ -19,7 +21,115 @@ class Sensor(Sense):
     def getOpponentsCoords(grid):
         return np.argwhere(grid == 1)
 
-    def senseOppsInFrontOfCar(self, grid, carPos, width = 3, factor = 1., noOpponentsFactor = 3):
+    @staticmethod
+    def getCarsDist(car_a, car_b):
+        return np.sum((car_a[:2] - car_b[:2]) ** 2)
+
+    def getClosestCar(self, car, otherCars):
+        assert len(otherCars) > 0
+        curMinDist = maxint
+        curClosestOtherCar = None
+        curMinInd = None
+        for curInd, otherCar in enumerate(otherCars):
+            curDist = self.getCarsDist(otherCar, car)
+            if curDist < curMinDist:
+                curClosestOtherCar = otherCar
+                curMinInd = curInd
+            curMinDist = min(curDist, curMinDist)
+
+        assert curClosestOtherCar is not None
+        assert curMinInd is not None
+
+        return curClosestOtherCar, curMinDist, curMinInd
+
+    def getClosestCarForAllCars(self, cars, otherCars):
+        curAssignment = []
+        assert len(otherCars) > 0  # make sure that it will run at least once
+        otherCars = list(otherCars)  # convert numpy array lines in items of a python list to be able and delete
+        for car in cars:
+            if len(otherCars) == 0:
+                break
+            curClosestOtherCar, curMinDist, curMinInd = self.getClosestCar(car, otherCars)
+            curAssignment.append((car, curClosestOtherCar, curMinDist))
+            del otherCars[curMinInd]
+
+        return curAssignment
+
+    def getPossibleAssignments(self, cars, otherCars):
+        possibleAssignments = []
+
+        for curCarsPermutation in permutations(cars):
+            possibleAssignments.append(
+                self.getClosestCarForAllCars(curCarsPermutation, otherCars=otherCars)
+            )
+
+        return possibleAssignments
+
+    @staticmethod
+    def getBestAssignment(assignments):
+        """returns an array of tuples (car, othercar, distance)"""
+        bestAssignment = None
+        minTotalDist = maxint
+        for assignment in assignments:
+            curTotalDist = np.sum([aa[-1] for aa in assignment])
+            if curTotalDist < minTotalDist:
+                bestAssignment = assignment
+            minTotalDist = min(minTotalDist, curTotalDist)
+
+        assert bestAssignment is not None
+
+        return bestAssignment
+
+    @staticmethod
+    def getMagnitudeDifferencesFromBestAssignment(bestAssignment):
+        """positive means car is approaching, negative means car is moving away from us"""
+        areaCouples = [(carCouple[0][2:4], carCouple[1][2:4]) for carCouple in bestAssignment]
+        magnitudeCouples = [(xx[0][0] * xx[0][1], xx[1][0] * xx[1][1]) for xx in areaCouples]
+        magnitudeDifferences = [xx[0] - xx[1] for xx in magnitudeCouples]
+        return magnitudeDifferences
+
+    def getRelativeSpeedToOpponent(self, prevCars, cars):
+        prevOpps = np.array(prevCars['others'])
+        opps = np.array(cars['others'])
+        if len(opps) > 0 and len(prevOpps) > 0:
+            # we want to find the car which is nearest to the previous car
+
+            # we are taking the euclidean distance between one car of current list with all cars of previous list
+            # we are doing this for all cars of current list
+            # we want to minimize the overall
+            bestAssignment = self.getBestAssignment(self.getPossibleAssignments(cars=opps, otherCars=prevOpps))
+
+            magnitudeDiffs = self.getMagnitudeDifferencesFromBestAssignment(bestAssignment)
+            #print "magnitudeDiffs: {}".format(magnitudeDiffs)
+
+            meanMagnDiff = np.mean(magnitudeDiffs)
+            print "meanMagnDiff: {}".format(meanMagnDiff)
+        else:
+            return None
+
+    def getEstimatedSpeed(self, prevGrid, grid):
+        """positive means opponents approaching, negative means they are moving away
+        and values range from ~ -3 to ~ +5 approximately"""
+        prevAveragePos = self.getAveragePositionOfFirstRowOpps(prevGrid)
+        averagePos = self.getAveragePositionOfFirstRowOpps(grid)
+        if averagePos is None or prevAveragePos is None:
+            return None
+        else:
+            return - (averagePos - prevAveragePos)
+
+    def getAveragePositionOfFirstRowOpps(self, grid):
+        oppPos = []
+        for col in grid[1:].T:
+            opps = np.argwhere(col == self.opponent_symbol).flatten()
+            if len(opps) > 0:
+                oppPos.append(opps[0])
+
+        if len(oppPos) == 0:
+            return None
+        else:
+            return np.mean(oppPos)
+
+    def senseOppsInFrontOfCar(self, grid, carPos, width=3, factor=1., noOpponentsFactor=3):
         startFrom = 1
 
         assert width % 2 == 1, "only odd (symmetric around the car) widths are accepted"
@@ -32,10 +142,10 @@ class Sensor(Sense):
 
         opps = np.argwhere(targetArea == 1)
 
-        effects = np.sum([1. / (opp[0]+1) ** factor for opp in opps])
+        effects = np.sum([1. / (opp[0] + 1) ** factor for opp in opps])
 
         if effects == 0:
-            maxObservation = len(targetArea)**factor
+            maxObservation = len(targetArea) ** factor
             return maxObservation * noOpponentsFactor
         else:
             return 1. / effects
@@ -103,7 +213,7 @@ class Sensor(Sense):
         # A is the hor_car vector and B is the opp_car vector
         isOpponentLeft = (hor_car_vec[0] * opp_car_vec[1] - opp_car_vec[0] * hor_car_vec[1]) > 0
 
-        #print "isOpponentLeft {}".format(isOpponentLeft)
+        # print "isOpponentLeft {}".format(isOpponentLeft)
 
         # also reshaping due to indiocyncracies of the cosine similarity function
         cos_sim = cosine_similarity(hor_car_vec.reshape(1, -1), opp_car_vec.reshape(1, -1)).flatten()[0]

@@ -6,7 +6,7 @@ from sensor import Sensor
 from enduro.action import Action
 from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed, \
-    GoOrBrakePlainFeature, MovingFasterIsBetterPlainFeature
+    GoOrBrakePlainFeature, MovingFasterIsBetterPlainFeature, RelativeSpeedJustFasterPlainFeature
 from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
 from enduro_env import EnduroEnv
 from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
@@ -17,6 +17,7 @@ from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFa
 from enduro_features.gaussian_threat import GaussianThreatLeftFeature, GaussianThreatRightFeature
 from enduro_features.collission_detection import ShortSightedOppViewFeature
 
+
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
@@ -24,14 +25,14 @@ class FeatureSenses(object):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
-            ShortSightedOppViewFeature,
-            #GaussianThreatLeftFeature,
-            #GaussianThreatRightFeature,
+            #ShortSightedOppViewFeature,
+            # GaussianThreatLeftFeature,
+            # GaussianThreatRightFeature,
 
-            #CountOppsNearLeftFeature,
-            #CountOppsNearRightFeature,
-            #CountOppsFarLeftFeature,
-            #CountOppsFarRightFeature,
+            # CountOppsNearLeftFeature,
+            # CountOppsNearRightFeature,
+            # CountOppsFarLeftFeature,
+            # CountOppsFarRightFeature,
 
             # MoveFasterWhenLessThanAverageSpeed,
             # MoveSlowerWhenMoreThanAverageSpeed,
@@ -47,8 +48,9 @@ class FeatureSenses(object):
 
         self.plain_feature_class_list = [
             ConstantBiasPlainFeature,
-            GoOrBrakePlainFeature,
-            #MovingFasterIsBetterPlainFeature,
+            RelativeSpeedJustFasterPlainFeature,
+            #GoOrBrakePlainFeature,
+            # MovingFasterIsBetterPlainFeature,
         ]
 
         self.featureList = self.__generateFeatures()
@@ -76,7 +78,7 @@ class FeatureSenses(object):
         else:
             raise AssertionError
 
-        #dynamicFeaturesLen = (len(action_set) * len(self.feature_class_list))
+        # dynamicFeaturesLen = (len(action_set) * len(self.feature_class_list))
 
         dynamicFeaturesLen = 0
         for feature_class in self.feature_class_list:
@@ -160,10 +162,14 @@ class FeatureSenses(object):
         if prevEnv is None:
             return np.zeros(self.featureLen)
         else:
+            cars = curEnv['cars']
+            grid = curEnv['grid']
 
-            # cars = curEnv['cars']
+            # self.sensor.getRelativeSpeedToOpponent(prevCars=prevEnv['cars'], cars=cars)
+
+
             # road = np.array(curEnv['road'])
-            # grid = curEnv['grid']
+            #
             # opponents = cars['others']
             #
             # if len(opponents) > 0:
@@ -196,13 +202,19 @@ class FeatureSenses(object):
             featureValuesVector = []
 
             for featureInstance in self.featureList:
-                #print type(featureInstance)
+                # print type(featureInstance)
                 featureValuesVector.append(
                     featureInstance.getFeatureValue(cur_action=action,
                                                     speed=curEnv['speed'],
                                                     cars=curEnv['cars'],
                                                     road=curEnv['road'],
-                                                    grid=curEnv['grid'])
+                                                    grid=curEnv['grid'],
+
+                                                    prevSpeed=prevEnv['speed'],
+                                                    prevCars=prevEnv['cars'],
+                                                    prevRoad=prevEnv['road'],
+                                                    prevGrid=prevEnv['grid'],
+                                                    )
                 )
 
             featureValuesVector = np.array(featureValuesVector)

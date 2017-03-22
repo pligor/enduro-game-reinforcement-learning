@@ -1,9 +1,39 @@
 from __future__ import division
 import numpy as np
 from enduro.action import Action
-from feature_base import Feature, ContrainedFeature
+from feature_base import Feature, ContrainedFeature, PlainFeature
 from sensor import Sensor
 from collections import OrderedDict
+
+
+class BeingInTheCentreIsBetterPlainFeature(ContrainedFeature, PlainFeature):
+    def __init__(self, rng):
+        super(BeingInTheCentreIsBetterPlainFeature, self).__init__()
+
+        self.prior_weight = 20.
+
+        self.sensor = Sensor(rng=rng)
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        distance, areWeOnTheRight = self.sensor.distanceFromCentre(grid=kwargs['grid'])
+
+        squareDistance = distance ** 2
+
+        inverseDistance = 1. / squareDistance
+
+        if (cur_action == Action.RIGHT and areWeOnTheRight) or (
+                        cur_action == Action.LEFT and not areWeOnTheRight):
+            value = -squareDistance
+
+        elif (cur_action == Action.LEFT and areWeOnTheRight) or (
+                        cur_action == Action.RIGHT and not areWeOnTheRight):
+            value = inverseDistance
+        else:
+            value = 0.
+
+        print "distance centre value {}".format(value)
+
+        return super(BeingInTheCentreIsBetterPlainFeature, self).getFeatureValue(cur_action, value=value)
 
 
 class BeingInTheCentreIsBetter(ContrainedFeature, Feature):
@@ -13,7 +43,7 @@ class BeingInTheCentreIsBetter(ContrainedFeature, Feature):
 
     def getFeatureValue(self, cur_action, **kwargs):
         value = 1. / kwargs['distance'] ** 2
-        #print "distance {}".format(value)
+        # print "distance {}".format(value)
         return super(BeingInTheCentreIsBetter, self).getFeatureValue(cur_action, value=value)
 
     @staticmethod
