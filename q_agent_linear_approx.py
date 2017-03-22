@@ -17,7 +17,7 @@ if __name__ == "__main__":
     programId = 0
     totalEpisodesCount = 100
     seed = 16011984
-    debugging = 0
+    debugging = 30
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -30,7 +30,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
     def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
-        self.learning_rate_factor = 1e-2
+        self.learning_rate_factor = 1e-1
         self.withNoop = False
         self.keyboardControlEnabled = False
 

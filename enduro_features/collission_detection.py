@@ -52,11 +52,11 @@ class PenaltyIfCollissionFeature(Feature):
         self.sensor = Sensor(rng=rng)
 
         self.priors_per_action = OrderedDict([
-            (Action.ACCELERATE, 0.),
-            (Action.RIGHT, 0.),
-            (Action.LEFT, 0.),
-            (Action.BRAKE, 1.),
-            (Action.NOOP, 0.),
+            (Action.ACCELERATE, 10.),
+            (Action.RIGHT, 10.),
+            (Action.LEFT, 10.),
+            (Action.BRAKE, 10.),
+            (Action.NOOP, 10.),
         ])
 
         super(PenaltyIfCollissionFeature, self).__init__()
@@ -65,7 +65,7 @@ class PenaltyIfCollissionFeature(Feature):
         speed = kwargs['speed']
         prevSpeed = kwargs['prevSpeed']
 
-        if speed == self.min_speed and prevSpeed > 0:
+        if speed == self.min_speed and prevSpeed > self.min_speed + 10:
             value = -1.
         else:
             value = 0

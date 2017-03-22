@@ -45,7 +45,7 @@ class FeatureSenses(object):
         self.feature_class_list = [
             # ShortSightedOppViewFeature,
             # GaussianThreatFeature,
-            # PenaltyIfCollissionFeature,
+            PenaltyIfCollissionFeature,
             # GaussianThreatLeftFeature,
             # GaussianThreatRightFeature,
             # PenaltyIfCollissionFeature
@@ -88,7 +88,7 @@ class FeatureSenses(object):
         # self.initialTheta = Qcase.RANDOM
         filename = "enduro_theta_vector.npy"
         if isfile(filename):
-            self.initialTheta = self.getWeightsFromFileCallback(filename="enduro_theta_vector.npy")
+            self.initialTheta = self.getWeightsFromFileCallback(filename="enduro_theta_vector.npy", rng=rng)
         else:
             self.initialTheta = self.getChangeWeightsCallback(originalFeatureLen=originalFeatureLen,
                                                               weight_priors=weight_priors, rng=rng)
@@ -129,10 +129,17 @@ class FeatureSenses(object):
         return weight_priors
 
     @staticmethod
-    def getWeightsFromFileCallback(filename):
+    def getWeightsFromFileCallback(filename, rng):
         saved_weights = np.load(filename)
+
         def changeWeights(vector):
-            return saved_weights
+            # if len(saved_weights) >= len(vector):
+            #     return saved_weights[:len(vector)]
+            # else:
+            #
+            vector[:len(saved_weights)] = saved_weights
+            vector[vector == 0] = rng.randn(len(vector[vector == 0]))
+            return vector
 
         return changeWeights
 
