@@ -5,13 +5,16 @@ from feature_base import Feature, ContrainedFeature
 from sensor import Sensor
 from collections import OrderedDict
 
+
 class BeingInTheCentreIsBetter(ContrainedFeature, Feature):
     def __init__(self, rng):
         super(BeingInTheCentreIsBetter, self).__init__()
         self.sensor = Sensor(rng=rng)
 
     def getFeatureValue(self, cur_action, **kwargs):
-        return super(BeingInTheCentreIsBetter, self).getFeatureValue(cur_action, value=kwargs['distance'])
+        value = 1. / kwargs['distance'] ** 2
+        print "distance {}".format(value)
+        return super(BeingInTheCentreIsBetter, self).getFeatureValue(cur_action, value=value)
 
     @staticmethod
     def get_enabled_actions():

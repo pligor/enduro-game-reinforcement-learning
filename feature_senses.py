@@ -6,7 +6,7 @@ from sensor import Sensor
 from enduro.action import Action
 from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed, \
-    GoOrBrakePlainFeature
+    GoOrBrakePlainFeature, MovingFasterIsBetterPlainFeature
 from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
 from enduro_env import EnduroEnv
 from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
@@ -32,7 +32,7 @@ class FeatureSenses(object):
             #CountOppsFarLeftFeature,
             #CountOppsFarRightFeature,
 
-            MoveFasterWhenLessThanAverageSpeed,
+            # MoveFasterWhenLessThanAverageSpeed,
             # MoveSlowerWhenMoreThanAverageSpeed,
             MoveLeftWhenRight,
             MoveRightWhenLeft,
@@ -46,7 +46,8 @@ class FeatureSenses(object):
 
         self.plain_feature_class_list = [
             ConstantBiasPlainFeature,
-            GoOrBrakePlainFeature,
+            #GoOrBrakePlainFeature,
+            MovingFasterIsBetterPlainFeature,
         ]
 
         self.featureList = self.__generateFeatures()

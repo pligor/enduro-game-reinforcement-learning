@@ -6,6 +6,21 @@ from sensor import Sensor
 from collections import OrderedDict
 
 
+class WithRbfFunc(object):  # We have verified that rbf func always returns below 1 so ok
+    @property
+    def average_speed(self):
+        raise NotImplementedError
+
+    @property
+    def rbf_wideness(self):
+        raise NotImplementedError
+
+    def rbfFunc(self, x):
+        value = np.exp(-((x - self.average_speed) ** 2) / self.rbf_wideness)
+        # assert value < 1.01
+        return value
+
+
 class GoOrBrakePlainFeature(PlainFeature):
     def __init__(self, rng):
         self.prior_weight = 10.
@@ -35,20 +50,63 @@ class GoOrBrakePlainFeature(PlainFeature):
         return super(GoOrBrakePlainFeature, self).getFeatureValue(cur_action, value=value)
 
 
-class MovingFasterResultsInPassingMoreCars(Feature):
+class MovingFasterIsBetterPlainFeature(PlainFeature, WithRbfFunc):
+    default_rbf_wideness = 1200  # 700
+    default_average_speed = 50  # 40, 30
+    max_speed = 50
+
+    @property
+    def average_speed(self):
+        return self.default_average_speed
+
+    @property
+    def rbf_wideness(self):
+        return self.default_rbf_wideness
+
+    def __init__(self, rng):
+        self.prior_weight = 10.
+
+        super(MovingFasterIsBetterPlainFeature, self).__init__()
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        speed = kwargs['speed']
+        speedFactor = self.rbfFunc(speed)
+
+        def getValue():
+            if cur_action == Action.ACCELERATE and speed < self.max_speed:
+                return speedFactor
+            elif cur_action == Action.ACCELERATE and speed == self.max_speed:
+                return 0
+            elif cur_action == Action.NOOP and speed < self.max_speed:
+                return speedFactor / 10.
+            elif cur_action == Action.NOOP and speed == self.max_speed:
+                return 1
+            elif cur_action == Action.BRAKE:
+                return -1. / speedFactor
+            else:
+                return 0
+
+        return super(MovingFasterIsBetterPlainFeature, self).getFeatureValue(cur_action, value=getValue())
+
+
+class MovingFasterResultsInPassingMoreCars(Feature, WithRbfFunc):
     default_rbf_wideness = 1200  # 700
     default_average_speed = 50  # 40, 30
 
-    def __init__(self,
-                 rbf_wideness=default_rbf_wideness, average_speed=default_average_speed):
-        super(MovingFasterResultsInPassingMoreCars, self).__init__()
-        self.average_speed = average_speed
-        self.rbf_wideness = rbf_wideness
+    @property
+    def average_speed(self):
+        return self.default_average_speed
 
-    def rbfFunc(self, x):
-        value = np.exp(-((x - self.average_speed) ** 2) / self.rbf_wideness)
-        assert value < 1.01
-        return value
+    @property
+    def rbf_wideness(self):
+        return self.default_rbf_wideness
+
+    @staticmethod
+    def get_enabled_actions():
+        return [Action.ACCELERATE, Action.BRAKE, Action.NOOP]
+
+    def __init__(self):
+        super(MovingFasterResultsInPassingMoreCars, self).__init__()
 
     def getFeatureValue(self, cur_action, **kwargs):
         speed = kwargs['speed']
