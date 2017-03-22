@@ -38,7 +38,7 @@ class ReactToOppsDirectlyInFront(PlainFeature):
 
         value = getValue()
 
-        print "ReactToOppsDirectlyInFront {}".format(value)
+        #print "ReactToOppsDirectlyInFront {}".format(value)
 
         return super(ReactToOppsDirectlyInFront, self).getFeatureValue(cur_action, value=value)
 

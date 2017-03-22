@@ -18,7 +18,7 @@ from enduro_features.gaussian_threat import GaussianThreatFeature, \
     GaussianThreatLeftFeature, GaussianThreatRightFeature
 from enduro_features.collission_detection import ShortSightedOppViewFeature, PenaltyIfCollissionFeature, \
     ReactToOppsDirectlyInFront
-
+from enduro_features.avoid_opponents import AvoidOppsNearby
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -64,6 +64,7 @@ class FeatureSenses(object):
 
         self.plain_feature_class_list = [
             ReactToOppsDirectlyInFront,
+            AvoidOppsNearby,
             # ConstantBiasPlainFeature,
             RelativeSpeedJustFasterPlainFeature,
             BeingInTheCentreIsBetterPlainFeature,
