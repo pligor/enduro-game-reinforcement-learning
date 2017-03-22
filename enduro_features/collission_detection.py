@@ -6,7 +6,7 @@ from sensor import Sensor
 from collections import OrderedDict
 
 
-class ShortSightedOppViewFeature(Feature):
+class ShortSightedOppViewFeature(ContrainedFeature, Feature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
@@ -26,6 +26,8 @@ class ShortSightedOppViewFeature(Feature):
         grid = kwargs['grid']
 
         carPos = self.sensor.getOurCarPos(grid=grid)
-        goodness = self.sensor.senseOppsInFrontOfCar(grid=grid, carPos=carPos)
+        goodness = self.sensor.senseOppsInFrontOfCar(grid=grid, carPos=carPos, factor=2.)
+
+        #print "goodness {}".format(goodness)
 
         return super(ShortSightedOppViewFeature, self).getFeatureValue(cur_action, value=goodness)

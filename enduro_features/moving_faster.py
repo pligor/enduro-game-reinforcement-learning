@@ -37,15 +37,15 @@ class GoOrBrakePlainFeature(PlainFeature):
         oppsCount = self.sensor.countOppsInFrontOfCar(grid=grid, carPos=carPos, howFar=self.how_far)
 
         if cur_action == Action.ACCELERATE and oppsCount == 0:
-            value = 10
+            value = 1.
         elif cur_action == Action.ACCELERATE and oppsCount > 0:
-            value = -1
+            value = -0.1
         elif cur_action == Action.BRAKE and oppsCount > 0:
-            value = 1
+            value = 0.1
         elif cur_action == Action.BRAKE and oppsCount == 0:
-            value = -10
+            value = -1.
         else:
-            value = 0
+            value = 0.
 
         return super(GoOrBrakePlainFeature, self).getFeatureValue(cur_action, value=value)
 
@@ -82,7 +82,7 @@ class MovingFasterIsBetterPlainFeature(PlainFeature, WithRbfFunc):
             elif cur_action == Action.NOOP and speed == self.max_speed:
                 return 1
             elif cur_action == Action.BRAKE:
-                return -1. / speedFactor
+                return -1. #/ speedFactor #this would give huge values
             else:
                 return 0
 

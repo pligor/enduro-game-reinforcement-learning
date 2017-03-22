@@ -47,8 +47,8 @@ class FeatureSenses(object):
 
         self.plain_feature_class_list = [
             ConstantBiasPlainFeature,
-            #GoOrBrakePlainFeature,
-            MovingFasterIsBetterPlainFeature,
+            GoOrBrakePlainFeature,
+            #MovingFasterIsBetterPlainFeature,
         ]
 
         self.featureList = self.__generateFeatures()
