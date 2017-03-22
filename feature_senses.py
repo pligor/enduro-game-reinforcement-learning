@@ -6,7 +6,8 @@ from sensor import Sensor
 from enduro.action import Action
 from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed, \
-    GoOrBrakePlainFeature, MovingFasterIsBetterPlainFeature, RelativeSpeedJustFasterPlainFeature
+    GoOrBrakePlainFeature, MovingFasterIsBetterPlainFeature, RelativeSpeedJustFasterPlainFeature, \
+    MovingOnAverageSpeedIsBetter
 from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft, BeingInTheCentreIsBetterPlainFeature
 from enduro_env import EnduroEnv
 from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
@@ -67,6 +68,7 @@ class FeatureSenses(object):
             AvoidOppsNearby,
             # ConstantBiasPlainFeature,
             RelativeSpeedJustFasterPlainFeature,
+            #MovingOnAverageSpeedIsBetter,
             BeingInTheCentreIsBetterPlainFeature,
             # GoOrBrakePlainFeature,
             # MovingFasterIsBetterPlainFeature,

@@ -23,7 +23,7 @@ class WithRbfFunc(object):  # We have verified that rbf func always returns belo
 
 class RelativeSpeedJustFasterPlainFeature(Constrainer, PlainFeature):
     def __init__(self, rng):
-        self.prior_weight = 1.
+        self.prior_weight = 10.
 
         self.optimal_speed = 1.
 
@@ -50,14 +50,14 @@ class RelativeSpeedJustFasterPlainFeature(Constrainer, PlainFeature):
             if cur_action == Action.ACCELERATE and estimatedSpeed < self.optimal_speed:
                 value = scaled_estimated_speed
             elif cur_action == Action.ACCELERATE and estimatedSpeed > self.optimal_speed:
-                #value = -0.5 * scaled_estimated_speed
-                value = -scaled_estimated_speed
+                value = -0.2 * scaled_estimated_speed
+                #value = -scaled_estimated_speed
 
             elif cur_action == Action.BRAKE and estimatedSpeed < self.optimal_speed:
                 value = -scaled_estimated_speed
             elif cur_action == Action.BRAKE and estimatedSpeed > self.optimal_speed:
-                #value = 0.2 * scaled_estimated_speed
-                value = scaled_estimated_speed
+                value = 0.1 * scaled_estimated_speed
+                #value = scaled_estimated_speed
 
             else:
                 value = 0.
@@ -92,6 +92,50 @@ class GoOrBrakePlainFeature(PlainFeature):
             value = 0.
 
         return super(GoOrBrakePlainFeature, self).getFeatureValue(cur_action, value=value)
+
+
+class MovingOnAverageSpeedIsBetter(PlainFeature, WithRbfFunc):
+    default_rbf_wideness = 500  # 700, 1200
+    default_average_speed = 30  # 40, 30
+    min_value = -1
+    max_value = +1
+
+    @property
+    def average_speed(self):
+        return self.default_average_speed
+
+    @property
+    def rbf_wideness(self):
+        return self.default_rbf_wideness
+
+    def __init__(self, rng):
+        self.prior_weight = 1.
+
+        super(MovingOnAverageSpeedIsBetter, self).__init__()
+
+    def getFeatureValue(self, cur_action, **kwargs):
+        speed = kwargs['speed']
+        speedFactor = self.rbfFunc(speed)
+
+        def getValue():
+            if cur_action == Action.ACCELERATE:
+                if speed < self.average_speed:
+                    return speedFactor #this is limited by default, no worries for over 1
+                else:
+                    return max(1 + (-1./speedFactor), self.min_value)
+            elif cur_action == Action.BRAKE:
+                if speed < self.average_speed:
+                    return max(1 + (-1. / speedFactor), self.min_value)
+                else:
+                    return min(-1 + (1. / speedFactor), self.max_value)
+            else:
+                return 0
+
+        value = getValue()
+
+        print "MovingOnAverageSpeedIsBetter {}".format(value)
+
+        return super(MovingOnAverageSpeedIsBetter, self).getFeatureValue(cur_action, value=value)
 
 
 class MovingFasterIsBetterPlainFeature(PlainFeature, WithRbfFunc):
