@@ -3,7 +3,7 @@ import numpy as np
 from enduro.action import Action
 from feature_base import Feature, ContrainedFeature
 from sensor import Sensor
-
+from collections import OrderedDict
 
 class BeingInTheCentreIsBetter(ContrainedFeature, Feature):
     def __init__(self, rng):
@@ -13,18 +13,22 @@ class BeingInTheCentreIsBetter(ContrainedFeature, Feature):
     def getFeatureValue(self, cur_action, **kwargs):
         return super(BeingInTheCentreIsBetter, self).getFeatureValue(cur_action, value=kwargs['distance'])
 
+    @staticmethod
+    def get_enabled_actions():
+        return [Action.RIGHT, Action.LEFT, Action.NOOP]
+
 
 class MoveRightWhenLeft(BeingInTheCentreIsBetter):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0.1,
-            Action.RIGHT: 0.9,
-            Action.LEFT: -0.8,
-            Action.BRAKE: 0.1,
-            Action.NOOP: 0.1,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0.1),
+            (Action.RIGHT, 0.9),
+            (Action.LEFT, -0.8),
+            (Action.BRAKE, 0.1),
+            (Action.NOOP, 0.1),
+        ])
 
         super(MoveRightWhenLeft, self).__init__(rng=rng)
 
@@ -39,13 +43,13 @@ class MoveLeftWhenRight(BeingInTheCentreIsBetter):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0.1,
-            Action.RIGHT: -0.8,
-            Action.LEFT: 0.9,
-            Action.BRAKE: 0.1,
-            Action.NOOP: 0.1,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0.1),
+            (Action.RIGHT, -0.8),
+            (Action.LEFT, 0.9),
+            (Action.BRAKE, 0.1),
+            (Action.NOOP, 0.1),
+        ])
 
         super(MoveLeftWhenRight, self).__init__(rng=rng)
 

@@ -3,6 +3,8 @@ import numpy as np
 from enduro.action import Action
 from feature_base import Feature, ContrainedFeature, PlainFeature
 from sensor import Sensor
+from collections import OrderedDict
+
 
 class GoOrBrakePlainFeature(PlainFeature):
     def __init__(self, rng):
@@ -58,13 +60,13 @@ class MoveFasterWhenLessThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0.9,
-            Action.RIGHT: 0.1,
-            Action.LEFT: 0.1,
-            Action.BRAKE: -0.8,
-            Action.NOOP: 0.1,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0.9),
+            (Action.RIGHT, 0.1),
+            (Action.LEFT, 0.1),
+            (Action.BRAKE, -0.8),
+            (Action.NOOP, 0.1),
+        ])
 
         super(MoveFasterWhenLessThanAverageSpeed, self).__init__()
 
@@ -85,13 +87,13 @@ class MoveSlowerWhenMoreThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: -8,
-            Action.RIGHT: 1,
-            Action.LEFT: 1,
-            Action.BRAKE: 9,
-            Action.NOOP: 1,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, -8),
+            (Action.RIGHT, 1),
+            (Action.LEFT, 1),
+            (Action.BRAKE, 9),
+            (Action.NOOP, 1),
+        ])
 
         super(MoveSlowerWhenMoreThanAverageSpeed, self).__init__()
 

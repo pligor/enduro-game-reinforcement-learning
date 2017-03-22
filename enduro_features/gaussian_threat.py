@@ -4,6 +4,7 @@ from enduro.action import Action
 from feature_base import Feature, ContrainedFeature
 from sensor import Sensor
 from scipy.stats import multivariate_normal as mvnorm
+from collections import OrderedDict
 
 
 class GaussianThreatFeature(Feature):  # ContrainedFeature
@@ -24,13 +25,13 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
         super(GaussianThreatFeature, self).__init__()  # rng=rng
 
     def getPriorsPerAction(self):
-        return {
-            Action.ACCELERATE: -1.,
-            Action.RIGHT: 2.,
-            Action.LEFT: 2.,
-            Action.BRAKE: 1.,
-            Action.NOOP: 0.5,
-        }
+        return OrderedDict([
+            (Action.ACCELERATE, -10.),
+            (Action.RIGHT, 20.),
+            (Action.LEFT, 20.),
+            (Action.BRAKE, 10.),
+            (Action.NOOP, 5.),
+        ])
 
     def __getPDFgaussian(self, carPos, oppCoords):
         mean = np.array([self.row_max_threat, carPos])
@@ -69,13 +70,14 @@ class GaussianThreatLeftFeature(GaussianThreatFeature):  # ContrainedFeature
         return opps_coords[np.argwhere(opps_coords[:, 1] <= carPos).flatten()]
 
     def getPriorsPerAction(self):
-        return {
-            Action.ACCELERATE: -1.,
-            Action.RIGHT: 2.,
-            Action.LEFT: -2.,
-            Action.BRAKE: 1.,
-            Action.NOOP: 0.5,
-        }
+        return OrderedDict([
+            (Action.ACCELERATE, -10.),
+            (Action.RIGHT, 20.),
+            (Action.LEFT, -20.),
+            (Action.BRAKE, 10.),
+            (Action.NOOP, 5.),
+        ])
+
 
 class GaussianThreatRightFeature(GaussianThreatFeature):  # ContrainedFeature
     def __init__(self, corresponding_action, rng):
@@ -87,10 +89,10 @@ class GaussianThreatRightFeature(GaussianThreatFeature):  # ContrainedFeature
         return opps_coords[np.argwhere(opps_coords[:, 1] >= carPos).flatten()]
 
     def getPriorsPerAction(self):
-        return {
-            Action.ACCELERATE: -1.,
-            Action.RIGHT: -20.,
-            Action.LEFT: 20.,
-            Action.BRAKE: 10.,
-            Action.NOOP: 5,
-        }
+        return OrderedDict([
+            (Action.ACCELERATE, -10.),
+            (Action.RIGHT, -20.),
+            (Action.LEFT, 20.),
+            (Action.BRAKE, 10.),
+            (Action.NOOP, 5.),
+        ])

@@ -2,14 +2,18 @@ from __future__ import division
 import numpy as np
 from enduro.action import Action
 from py_helper import Constrainer
+from collections import OrderedDict
+
 
 class WithFeatureValue(object):
     def getFeatureValue(self, cur_action, **kwargs):
         raise NotImplementedError
 
+
 class WithGetPrior(object):
     def getPrior(self):
         raise NotImplementedError
+
 
 class PlainFeature(WithFeatureValue, WithGetPrior):
     def __init__(self):
@@ -53,6 +57,24 @@ class Feature(WithFeatureValue, WithGetPrior):
 
         assert hasattr(self, "priors_per_action")
 
+        self.checkActionsOrder()
+
+    def checkActionsOrder(self):
+        if hasattr(self, "priors_per_action"):
+            enabledActions = self.get_enabled_actions()
+            actions = self.priors_per_action.keys()
+            for action in actions:
+                if action in enabledActions:
+                    assert action == enabledActions[0], \
+                        "enabled actions must have same order as priors, action {} and first en action {}".format(
+                            action, enabledActions[0]
+                        )
+                    del enabledActions[0]
+
+    @staticmethod
+    def get_enabled_actions():
+        return [Action.ACCELERATE, Action.RIGHT, Action.LEFT, Action.BRAKE, Action.NOOP]
+
     def getFeatureValue(self, cur_action, **kwargs):
         if hasattr(self, "corresponding_action"):
             return kwargs['value'] if cur_action == self.corresponding_action else 0
@@ -74,24 +96,24 @@ class ContrainedFeature(Constrainer, WithFeatureValue):
         cur_value = kwargs['value']
         self.old_range = cur_value
 
-        #print "cur value {}".format(cur_value)
+        # print "cur value {}".format(cur_value)
 
         constrained_value = self.constrain(cur_value)
 
-        #print "constrained value {}".format(constrained_value)
+        # print "constrained value {}".format(constrained_value)
 
         return super(ContrainedFeature, self).getFeatureValue(cur_action, value=constrained_value)
 
 
 class ConstantBiasFeature(Feature):
     def __init__(self, corresponding_action, rng):
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         self.corresponding_action = corresponding_action
 

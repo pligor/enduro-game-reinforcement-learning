@@ -17,7 +17,7 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 100
     seed = 16011984
-    debugging = 0
+    debugging = 50
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -34,7 +34,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
         self.keyboardControlEnabled = False
 
-        self.epsilon = 0.10
+        self.epsilon = 0.05
 
         # small more like max, large more like random, i.e 5e-3
         self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[

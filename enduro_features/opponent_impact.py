@@ -4,7 +4,7 @@ from enduro.action import Action
 from sensor import Sensor
 from feature_base import ContrainedFeature, Feature
 from py_helper import Constrainer
-
+from collections import OrderedDict
 
 class OpponentImpactFeature(ContrainedFeature, Feature):
     def __init__(self, rng):
@@ -62,13 +62,13 @@ class FirstOpponentLeftFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(FirstOpponentLeftFeature, self).__init__(rng=rng)
 
@@ -88,13 +88,13 @@ class FirstOpponentRightFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(FirstOpponentRightFeature, self).__init__(rng=rng)
 
@@ -114,13 +114,13 @@ class SecondOpponentLeftFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(SecondOpponentLeftFeature, self).__init__(rng=rng)
 
@@ -140,13 +140,13 @@ class SecondOpponentRightFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(SecondOpponentRightFeature, self).__init__(rng=rng)
 
@@ -166,13 +166,13 @@ class ThirdOpponentLeftFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(ThirdOpponentLeftFeature, self).__init__(rng=rng)
 
@@ -192,13 +192,13 @@ class ThirdOpponentRightFeature(OpponentImpactFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(ThirdOpponentRightFeature, self).__init__(rng=rng)
 

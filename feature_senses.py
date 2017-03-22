@@ -24,8 +24,8 @@ class FeatureSenses(object):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
-            GaussianThreatLeftFeature,
-            GaussianThreatRightFeature,
+            #GaussianThreatLeftFeature,
+            #GaussianThreatRightFeature,
 
             #CountOppsNearLeftFeature,
             #CountOppsNearRightFeature,
@@ -74,7 +74,14 @@ class FeatureSenses(object):
         else:
             raise AssertionError
 
-        return (len(action_set) * len(self.feature_class_list)) + len(self.plain_feature_class_list)
+        #dynamicFeaturesLen = (len(action_set) * len(self.feature_class_list))
+
+        dynamicFeaturesLen = 0
+        for feature_class in self.feature_class_list:
+            dynamicFeaturesLen += len(feature_class.get_enabled_actions())
+        # print "length feature class list"
+        # print dynamicFeaturesLen
+        return dynamicFeaturesLen + len(self.plain_feature_class_list)
 
     @staticmethod
     def collectWeightPriors(feature_list):
@@ -129,13 +136,11 @@ class FeatureSenses(object):
         return self.featureList
 
     def __generateFeatures(self):
-        if hasattr(self, "getActionsSet") and hasattr(self, "rng"):
-            action_set = self.getActionsSet()
-
+        if hasattr(self, "rng"):
             featureInstances = []
 
             for cur_feat_class in self.feature_class_list:
-                for cur_action in action_set:
+                for cur_action in cur_feat_class.get_enabled_actions():
                     featureInstances.append(cur_feat_class(
                         corresponding_action=cur_action, rng=self.rng
                     ))

@@ -3,7 +3,7 @@ import numpy as np
 from enduro.action import Action
 from sensor import Sensor
 from feature_base import ContrainedFeature, Feature
-
+from collections import OrderedDict
 
 # oppNearLeft = self.__countToTextClass(
 #             self.sensor.countOppsVarLen(newGrid, left_boolean=True, howFar=5, startFrom=0))
@@ -36,13 +36,13 @@ class CountOppsNearLeftFeature(CountOpponentsFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(CountOppsNearLeftFeature, self).__init__(rng=rng)
 
@@ -58,13 +58,13 @@ class CountOppsNearRightFeature(CountOpponentsFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(CountOppsNearRightFeature, self).__init__(rng=rng)
 
@@ -80,13 +80,13 @@ class CountOppsFarLeftFeature(CountOpponentsFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(CountOppsFarLeftFeature, self).__init__(rng=rng)
 
@@ -102,13 +102,13 @@ class CountOppsFarRightFeature(CountOpponentsFeature):
     def __init__(self, corresponding_action, rng):
         self.corresponding_action = corresponding_action
 
-        self.priors_per_action = {
-            Action.ACCELERATE: 0,
-            Action.RIGHT: 0,
-            Action.LEFT: 0,
-            Action.BRAKE: 0,
-            Action.NOOP: 0,
-        }
+        self.priors_per_action = OrderedDict([
+            (Action.ACCELERATE, 0),
+            (Action.RIGHT, 0),
+            (Action.LEFT, 0),
+            (Action.BRAKE, 0),
+            (Action.NOOP, 0),
+        ])
 
         super(CountOppsFarRightFeature, self).__init__(rng=rng)
 
