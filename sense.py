@@ -259,7 +259,7 @@ class Sense(object):
         extraCols = width // 2
 
         fromCol = max(carPos - extraCols, 0)
-        toCol = min(carPos + extraCols, self.gridWidth)
+        toCol = min(carPos + extraCols + 1, self.gridWidth)
 
         targetArea = grid[startFrom:(howFar+1), fromCol:toCol]
 

@@ -19,6 +19,27 @@ class Sensor(Sense):
     def getOpponentsCoords(grid):
         return np.argwhere(grid == 1)
 
+    def senseOppsInFrontOfCar(self, grid, carPos, width = 3, factor = 1., noOpponentsFactor = 3):
+        startFrom = 1
+
+        assert width % 2 == 1, "only odd (symmetric around the car) widths are accepted"
+        extraCols = width // 2
+
+        fromCol = max(carPos - extraCols, 0)
+        toCol = min(carPos + extraCols + 1, self.gridWidth)
+
+        targetArea = grid[startFrom:, fromCol:toCol]
+
+        opps = np.argwhere(targetArea == 1)
+
+        effects = np.sum([1. / (opp[0]+1) ** factor for opp in opps])
+
+        if effects == 0:
+            maxObservation = len(targetArea)**factor
+            return maxObservation * noOpponentsFactor
+        else:
+            return 1. / effects
+
     def getAngleAndMagnitudeOfOpponentFromEnv(self, cars, road, opp_index):
         self_vec = cars['self'][:2]
 

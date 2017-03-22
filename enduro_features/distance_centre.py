@@ -13,7 +13,7 @@ class BeingInTheCentreIsBetter(ContrainedFeature, Feature):
 
     def getFeatureValue(self, cur_action, **kwargs):
         value = 1. / kwargs['distance'] ** 2
-        print "distance {}".format(value)
+        #print "distance {}".format(value)
         return super(BeingInTheCentreIsBetter, self).getFeatureValue(cur_action, value=value)
 
     @staticmethod

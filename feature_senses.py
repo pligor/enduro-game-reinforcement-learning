@@ -15,7 +15,7 @@ from enduro_features.feature_base import ConstantBiasFeature, ConstantBiasPlainF
 from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFarRightFeature, \
     CountOppsNearLeftFeature, CountOppsNearRightFeature
 from enduro_features.gaussian_threat import GaussianThreatLeftFeature, GaussianThreatRightFeature
-
+from enduro_features.collission_detection import ShortSightedOppViewFeature
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -24,6 +24,7 @@ class FeatureSenses(object):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
+            ShortSightedOppViewFeature,
             #GaussianThreatLeftFeature,
             #GaussianThreatRightFeature,
 
