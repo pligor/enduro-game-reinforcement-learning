@@ -23,7 +23,7 @@ class WithRbfFunc(object):  # We have verified that rbf func always returns belo
 
 class RelativeSpeedJustFasterPlainFeature(Constrainer, PlainFeature):
     def __init__(self, rng):
-        self.prior_weight = 10.
+        self.prior_weight = 1.
 
         self.optimal_speed = 1.
 
@@ -50,12 +50,14 @@ class RelativeSpeedJustFasterPlainFeature(Constrainer, PlainFeature):
             if cur_action == Action.ACCELERATE and estimatedSpeed < self.optimal_speed:
                 value = scaled_estimated_speed
             elif cur_action == Action.ACCELERATE and estimatedSpeed > self.optimal_speed:
-                value = -0.5 * scaled_estimated_speed
+                #value = -0.5 * scaled_estimated_speed
+                value = -scaled_estimated_speed
 
             elif cur_action == Action.BRAKE and estimatedSpeed < self.optimal_speed:
                 value = -scaled_estimated_speed
             elif cur_action == Action.BRAKE and estimatedSpeed > self.optimal_speed:
-                value = 0.2 * scaled_estimated_speed
+                #value = 0.2 * scaled_estimated_speed
+                value = scaled_estimated_speed
 
             else:
                 value = 0.
@@ -65,7 +67,7 @@ class RelativeSpeedJustFasterPlainFeature(Constrainer, PlainFeature):
 
 class GoOrBrakePlainFeature(PlainFeature):
     def __init__(self, rng):
-        self.prior_weight = 10.
+        self.prior_weight = 1.
 
         self.sensor = Sensor(rng=rng)
         self.how_far = 10
@@ -106,7 +108,7 @@ class MovingFasterIsBetterPlainFeature(PlainFeature, WithRbfFunc):
         return self.default_rbf_wideness
 
     def __init__(self, rng):
-        self.prior_weight = 10.
+        self.prior_weight = 1.
 
         super(MovingFasterIsBetterPlainFeature, self).__init__()
 
@@ -188,11 +190,11 @@ class MoveSlowerWhenMoreThanAverageSpeed(MovingFasterResultsInPassingMoreCars):
         self.corresponding_action = corresponding_action
 
         self.priors_per_action = OrderedDict([
-            (Action.ACCELERATE, -8),
-            (Action.RIGHT, 1),
-            (Action.LEFT, 1),
-            (Action.BRAKE, 9),
-            (Action.NOOP, 1),
+            (Action.ACCELERATE, -0.8),
+            (Action.RIGHT, 0.1),
+            (Action.LEFT, 0.1),
+            (Action.BRAKE, 0.9),
+            (Action.NOOP, 0.1),
         ])
 
         super(MoveSlowerWhenMoreThanAverageSpeed, self).__init__()

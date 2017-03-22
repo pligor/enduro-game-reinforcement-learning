@@ -426,7 +426,7 @@ if __name__ == "__main__":
         prevGrid = sense.generateEmptyGrid()
         newGrid = sense.generateEmptyGrid()
         print prevGrid
-        print sense.isRoadTurningRight(prevGrid, Action.BREAK, newGrid)
+        print sense.isRoadTurningRight(prevGrid, Action.BRAKE, newGrid)
         print newGrid
 
 
@@ -434,7 +434,7 @@ if __name__ == "__main__":
         prevGrid = sense.generateEmptyGrid()
         newGrid = sense.generateEmptyGrid()
         print prevGrid
-        print sense.isRoadTurningLeft(prevGrid, Action.BREAK, newGrid)
+        print sense.isRoadTurningLeft(prevGrid, Action.BRAKE, newGrid)
         print newGrid
 
 

@@ -17,13 +17,13 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 100
     seed = 16011984
-    debugging = 50
+    debugging = 0
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
 
 
-class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, SoftmaxActionSelection, KeyboardControl,
                          Agent):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 

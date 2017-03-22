@@ -272,8 +272,10 @@ class Sense(object):
         startFrom = int(startFrom)
         assert 0 <= startFrom <= howFar
 
-        targetArea = grid[startFrom:(howFar+1), :self.gridWidth/2] if left_boolean else \
-            grid[startFrom:(howFar+1), self.gridWidth/2:]
+        halfGrid = int(self.gridWidth/2)
+
+        targetArea = grid[startFrom:(howFar+1), :halfGrid] if left_boolean else \
+            grid[startFrom:(howFar+1), halfGrid:]
 
         return np.sum(targetArea == self.opponent_symbol)
 

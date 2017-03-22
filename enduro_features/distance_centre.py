@@ -10,7 +10,7 @@ class BeingInTheCentreIsBetterPlainFeature(ContrainedFeature, PlainFeature):
     def __init__(self, rng):
         super(BeingInTheCentreIsBetterPlainFeature, self).__init__()
 
-        self.prior_weight = 20.
+        self.prior_weight = 2.
 
         self.sensor = Sensor(rng=rng)
 
@@ -31,7 +31,7 @@ class BeingInTheCentreIsBetterPlainFeature(ContrainedFeature, PlainFeature):
         else:
             value = 0.
 
-        print "distance centre value {}".format(value)
+        #print "distance centre value {}".format(value)
 
         return super(BeingInTheCentreIsBetterPlainFeature, self).getFeatureValue(cur_action, value=value)
 

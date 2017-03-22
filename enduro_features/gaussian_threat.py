@@ -26,11 +26,11 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
 
     def getPriorsPerAction(self):
         return OrderedDict([
-            (Action.ACCELERATE, -10.),
-            (Action.RIGHT, 20.),
-            (Action.LEFT, 20.),
-            (Action.BRAKE, 10.),
-            (Action.NOOP, 5.),
+            (Action.ACCELERATE, -1.),
+            (Action.RIGHT, 2.),
+            (Action.LEFT, 2.),
+            (Action.BRAKE, 1.),
+            (Action.NOOP, 0.5),
         ])
 
     def __getPDFgaussian(self, carPos, oppCoords):
@@ -71,11 +71,11 @@ class GaussianThreatLeftFeature(GaussianThreatFeature):  # ContrainedFeature
 
     def getPriorsPerAction(self):
         return OrderedDict([
-            (Action.ACCELERATE, -10.),
-            (Action.RIGHT, 20.),
-            (Action.LEFT, -20.),
-            (Action.BRAKE, 10.),
-            (Action.NOOP, 5.),
+            (Action.ACCELERATE, -1.),
+            (Action.RIGHT, 2.),
+            (Action.LEFT, -2.),
+            (Action.BRAKE, 1.),
+            (Action.NOOP, 0.5),
         ])
 
 
@@ -90,9 +90,9 @@ class GaussianThreatRightFeature(GaussianThreatFeature):  # ContrainedFeature
 
     def getPriorsPerAction(self):
         return OrderedDict([
-            (Action.ACCELERATE, -10.),
-            (Action.RIGHT, -20.),
-            (Action.LEFT, 20.),
-            (Action.BRAKE, 10.),
-            (Action.NOOP, 5.),
+            (Action.ACCELERATE, -1.),
+            (Action.RIGHT, -2.),
+            (Action.LEFT, 2.),
+            (Action.BRAKE, 1.),
+            (Action.NOOP, 0.5),
         ])

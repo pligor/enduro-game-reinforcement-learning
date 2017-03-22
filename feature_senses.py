@@ -7,7 +7,7 @@ from enduro.action import Action
 from collections import OrderedDict
 from enduro_features.moving_faster import MoveFasterWhenLessThanAverageSpeed, MoveSlowerWhenMoreThanAverageSpeed, \
     GoOrBrakePlainFeature, MovingFasterIsBetterPlainFeature, RelativeSpeedJustFasterPlainFeature
-from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft
+from enduro_features.distance_centre import MoveLeftWhenRight, MoveRightWhenLeft, BeingInTheCentreIsBetterPlainFeature
 from enduro_env import EnduroEnv
 from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOpponentRightFeature, \
     SecondOpponentLeftFeature, SecondOpponentRightFeature
@@ -15,20 +15,33 @@ from enduro_features.feature_base import ConstantBiasFeature, ConstantBiasPlainF
 from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFarRightFeature, \
     CountOppsNearLeftFeature, CountOppsNearRightFeature
 from enduro_features.gaussian_threat import GaussianThreatLeftFeature, GaussianThreatRightFeature
-from enduro_features.collission_detection import ShortSightedOppViewFeature
+from enduro_features.collission_detection import ShortSightedOppViewFeature, PenaltyIfCollissionFeature
 
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
+    #combinations that kind of worked:
+    #
+    # CountOppsNearLeftFeature,
+    # CountOppsNearRightFeature,
+    # CountOppsFarLeftFeature,
+    # CountOppsFarRightFeature,
+    # -------------------------
+    # ShortSightedOppViewFeature,
+    # ConstantBiasPlainFeature,
+    # RelativeSpeedJustFasterPlainFeature,
+    # BeingInTheCentreIsBetterPlainFeature,
+
     def __init__(self, rng):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
-            #ShortSightedOppViewFeature,
-            # GaussianThreatLeftFeature,
-            # GaussianThreatRightFeature,
-
+            ShortSightedOppViewFeature,
+            PenaltyIfCollissionFeature,
+            #GaussianThreatLeftFeature,
+            #GaussianThreatRightFeature,
+            #PenaltyIfCollissionFeature
             # CountOppsNearLeftFeature,
             # CountOppsNearRightFeature,
             # CountOppsFarLeftFeature,
@@ -36,8 +49,8 @@ class FeatureSenses(object):
 
             # MoveFasterWhenLessThanAverageSpeed,
             # MoveSlowerWhenMoreThanAverageSpeed,
-            MoveLeftWhenRight,
-            MoveRightWhenLeft,
+            #MoveLeftWhenRight,
+            #MoveRightWhenLeft,
             # FirstOpponentLeftFeature,
             # FirstOpponentRightFeature,
             # SecondOpponentLeftFeature,
@@ -49,6 +62,7 @@ class FeatureSenses(object):
         self.plain_feature_class_list = [
             ConstantBiasPlainFeature,
             RelativeSpeedJustFasterPlainFeature,
+            BeingInTheCentreIsBetterPlainFeature,
             #GoOrBrakePlainFeature,
             # MovingFasterIsBetterPlainFeature,
         ]
