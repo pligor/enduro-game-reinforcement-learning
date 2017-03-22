@@ -58,7 +58,7 @@ class AvoidOppsFarAway(ContrainedFeature, PlainFeature):
 
         value = getValue()
 
-        print "AvoidOppsFarAway {}".format(value)
+        #print "AvoidOppsFarAway {}".format(value)
 
         return super(AvoidOppsFarAway, self).getFeatureValue(cur_action, value=value)
 

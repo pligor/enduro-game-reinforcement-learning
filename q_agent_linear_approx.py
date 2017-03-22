@@ -14,10 +14,10 @@ from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 from keyboard_control import KeyboardControl
 
 if __name__ == "__main__":
-    counter = 0
+    programId = 0
     totalEpisodesCount = 100
     seed = 16011984
-    debugging = 20
+    debugging = 0
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
@@ -41,14 +41,14 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
                                              ::-1] if computationalTemperature is None else \
             np.repeat(computationalTemperature, totalEpisodesCount)
 
-        #print "comp temp space {}".format(self.computationalTemperatureSpace)
+        # print "comp temp space {}".format(self.computationalTemperatureSpace)
 
         self.debugging = debugging  # zero for actual run
         self.gamma = 0.9
 
         self.middlefix = "linear_approx_take_one"
         self.rewardsFilename = "QLinearApproxAgent_{:2d}_{}_{}_data".format(
-            counter, self.middlefix, totalEpisodesCount
+            programId, self.middlefix, totalEpisodesCount
         )
 
         self.rng = rng
@@ -99,6 +99,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         return self.learning_rate_factor / np.power(self.episodeCounter, self.lr_p_param)
 
     def initialise(self, road, cars, speed, grid):
+        if self.episodeCounter >= 1:
+            self.onEndOfEpisode()
+
         """Called at the beginning of an episode. Use it to construct the initial state."""
         super(QLinearApproxAgent, self).initialise(road=road, cars=cars, speed=speed, grid=grid)
 
@@ -214,6 +217,10 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
             cv2.imshow("Enduro", self._image)
             cv2.waitKey(40)
 
+    def onEndOfEpisode(self):
+        # save theta vector
+        np.save("enduro_theta_vector.npy", self.thetaVector)
+
 
 if __name__ == "__main__":
     def mymain(computationalTemperature=None):
@@ -227,7 +234,6 @@ if __name__ == "__main__":
         print total_rewards
 
         # print agent.storeRewardInfo()
-        # TO DO np.save(agent.middlefix + "_bellmanQ", agent.bellmanQ)
 
         return np.mean(total_rewards)
 

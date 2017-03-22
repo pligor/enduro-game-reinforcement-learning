@@ -21,6 +21,8 @@ from enduro_features.collission_detection import ShortSightedOppViewFeature, Pen
     ReactToOppsDirectlyInFront
 from enduro_features.avoid_opponents import AvoidOppsNearby, AvoidOppsFarAway
 from enduro_features.surpass_opponents import SurpassNearbyOpponents
+from os.path import isfile
+
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
@@ -71,7 +73,7 @@ class FeatureSenses(object):
             SurpassNearbyOpponents,
             # ConstantBiasPlainFeature,
             RelativeSpeedJustFasterPlainFeature,
-            #MovingOnAverageSpeedIsBetter,
+            # MovingOnAverageSpeedIsBetter,
             BeingInTheCentreIsBetterPlainFeature,
             # GoOrBrakePlainFeature,
             # MovingFasterIsBetterPlainFeature,
@@ -84,8 +86,12 @@ class FeatureSenses(object):
         assert originalFeatureLen == len(weight_priors)
 
         # self.initialTheta = Qcase.RANDOM
-        self.initialTheta = self.getChangeWeightsCallback(originalFeatureLen=originalFeatureLen,
-                                                          weight_priors=weight_priors, rng=rng)
+        filename = "enduro_theta_vector.npy"
+        if isfile(filename):
+            self.initialTheta = self.getWeightsFromFileCallback(filename="enduro_theta_vector.npy")
+        else:
+            self.initialTheta = self.getChangeWeightsCallback(originalFeatureLen=originalFeatureLen,
+                                                              weight_priors=weight_priors, rng=rng)
 
         if self.nonLinearitiesEnabled:
             self.featureLen = originalFeatureLen + self.countCombinations(originalFeatureLen=originalFeatureLen)
@@ -121,6 +127,14 @@ class FeatureSenses(object):
             )
 
         return weight_priors
+
+    @staticmethod
+    def getWeightsFromFileCallback(filename):
+        saved_weights = np.load(filename)
+        def changeWeights(vector):
+            return saved_weights
+
+        return changeWeights
 
     @staticmethod
     def getChangeWeightsCallback(originalFeatureLen, weight_priors, rng):
