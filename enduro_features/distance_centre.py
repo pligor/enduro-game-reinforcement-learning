@@ -10,7 +10,7 @@ class BeingInTheCentreIsBetterPlainFeature(ContrainedFeature, PlainFeature):
     def __init__(self, rng):
         super(BeingInTheCentreIsBetterPlainFeature, self).__init__()
 
-        self.prior_weight = 2.
+        self.prior_weight = 5.
 
         self.sensor = Sensor(rng=rng)
 

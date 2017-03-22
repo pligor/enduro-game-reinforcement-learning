@@ -37,6 +37,6 @@ class SurpassNearbyOpponents(PlainFeature): #ContrainedFeature
 
         value = getValue()
 
-        print "SurpassNearbyOpponents {}".format(value)
+        #print "SurpassNearbyOpponents {}".format(value)
 
         return super(SurpassNearbyOpponents, self).getFeatureValue(cur_action, value=value)
