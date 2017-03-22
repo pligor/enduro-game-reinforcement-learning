@@ -15,8 +15,9 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
 
         self.sensor = Sensor(rng=rng)
 
-        cov_magnitude = 4  # small more peaky, large more take into account the neighborhood
-        self.offset = 1
+        cov_magnitude = 6  # small more peaky, large more take into account the neighborhood
+        self.offset = 0
+        self.factor = 100
         self.row_max_threat = 2
         self.FRONT_ROW = 1  # this is capital because it is a constant really
 
@@ -52,12 +53,14 @@ class GaussianThreatFeature(Feature):  # ContrainedFeature
             if opp_coords[0] >= self.FRONT_ROW:  # considering ONLY opponents from row 1 and beyond
                 total_threat += self.__getPDFgaussian(carPos=carPos, oppCoords=opp_coords)
 
-        total_value = -total_threat
+        total_value = -total_threat + self.offset
+        total_value *= self.factor
+
         q_value = super(GaussianThreatFeature, self).getFeatureValue(cur_action, value=total_value)
 
-        # print "q value {}".format(q_value)
+        #print "q_value {}".format(q_value)
 
-        return q_value + self.offset
+        return q_value
 
 
 class GaussianThreatLeftFeature(GaussianThreatFeature):  # ContrainedFeature

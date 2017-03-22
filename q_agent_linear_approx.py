@@ -17,13 +17,13 @@ if __name__ == "__main__":
     counter = 0
     totalEpisodesCount = 100
     seed = 16011984
-    debugging = 0
+    debugging = 100
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
 
 
-class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, SoftmaxActionSelection, KeyboardControl,
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
                          Agent):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
@@ -31,10 +31,10 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
         self.learning_rate_factor = 1e-2
-
+        self.withNoop = False
         self.keyboardControlEnabled = False
 
-        self.epsilon = 0.1
+        self.epsilon = 0.05
 
         # small more like max, large more like random, i.e 5e-3
         self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[
@@ -80,7 +80,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
     def getActionsSet(self):
         """including the noop action in our possible actions"""
         if self.allActionSet is None:
-            self.allActionSet = super(QLinearApproxAgent, self).getActionsSet() + [Action.NOOP]
+            self.allActionSet = (super(QLinearApproxAgent, self).getActionsSet() + [Action.NOOP]) if self.withNoop else \
+                super(QLinearApproxAgent, self).getActionsSet()
             return self.allActionSet
         else:
             return self.allActionSet

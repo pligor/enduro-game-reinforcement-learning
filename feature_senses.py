@@ -14,7 +14,8 @@ from enduro_features.opponent_impact import FirstOpponentLeftFeature, FirstOppon
 from enduro_features.feature_base import ConstantBiasFeature, ConstantBiasPlainFeature
 from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFarRightFeature, \
     CountOppsNearLeftFeature, CountOppsNearRightFeature
-from enduro_features.gaussian_threat import GaussianThreatLeftFeature, GaussianThreatRightFeature
+from enduro_features.gaussian_threat import GaussianThreatFeature, \
+    GaussianThreatLeftFeature, GaussianThreatRightFeature
 from enduro_features.collission_detection import ShortSightedOppViewFeature, PenaltyIfCollissionFeature
 
 
@@ -38,7 +39,8 @@ class FeatureSenses(object):
 
         self.feature_class_list = [
             ShortSightedOppViewFeature,
-            PenaltyIfCollissionFeature,
+            GaussianThreatFeature,
+            #PenaltyIfCollissionFeature,
             #GaussianThreatLeftFeature,
             #GaussianThreatRightFeature,
             #PenaltyIfCollissionFeature
@@ -56,15 +58,15 @@ class FeatureSenses(object):
             # SecondOpponentLeftFeature,
             # SecondOpponentRightFeature,
             # 'ThirdOpponentFeature',
-            # ConstantBiasFeature,
+            ConstantBiasFeature,
         ]
 
         self.plain_feature_class_list = [
-            ConstantBiasPlainFeature,
+            #ConstantBiasPlainFeature,
             RelativeSpeedJustFasterPlainFeature,
             BeingInTheCentreIsBetterPlainFeature,
             #GoOrBrakePlainFeature,
-            # MovingFasterIsBetterPlainFeature,
+            #MovingFasterIsBetterPlainFeature,
         ]
 
         self.featureList = self.__generateFeatures()
