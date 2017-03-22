@@ -5,10 +5,11 @@ from road_category import RoadCategory
 from extreme_position import ExtremePosition
 from how_many_opponents import HowManyOpponents
 
+
 class Sense(object):
     opponent_symbol = 1
 
-    def __init__(self, rng, gridLength = 11, gridWidth = 10):
+    def __init__(self, rng, gridLength=11, gridWidth=10):
         self.rng = rng
         self.gridLength = gridLength
         self.gridWidth = gridWidth
@@ -225,7 +226,7 @@ class Sense(object):
         for i in lineOpponents:
             fullInFront.append(
                 self.checkOpponentsInFront(newGrid, (curLine, i)) or self.checkOpponentsInFront(newGrid,
-                                                                                                  (curLine + 1, i))
+                                                                                                (curLine + 1, i))
             )
 
         fullInFront = np.array(fullInFront)
@@ -241,7 +242,7 @@ class Sense(object):
 
     def countOpponents(self, grid, left_boolean):
         assert self.gridWidth % 2 == 0
-        targetArea = grid[1:, :self.gridWidth/2] if left_boolean else grid[1:, self.gridWidth/2:]
+        targetArea = grid[1:, :self.gridWidth / 2] if left_boolean else grid[1:, self.gridWidth / 2:]
         count = np.sum(targetArea == self.opponent_symbol)
         howManyOpponents = HowManyOpponents()
         if count > howManyOpponents.maxcount:
@@ -249,7 +250,26 @@ class Sense(object):
         else:
             return str(count)
 
-    def countOppsInFrontOfCar(self, grid, carPos, howFar, width = 3):
+    def countOppsInRelationToCar(self, grid, carPos, howFar=None, width=3, startRow=1, shift=0):
+        if howFar is None:
+            howFar = self.gridLength - 1
+        howFar = int(howFar)
+        assert startRow < howFar < self.gridLength
+        assert width % 2 == 1, "only odd (symmetric around the car) widths are accepted"
+
+        extraCols = width // 2
+
+        fromCol = min(max(carPos - extraCols + shift, 0), self.gridWidth)
+        toCol = max(min(carPos + extraCols + 1 + shift, self.gridWidth), 0)
+
+        startRow = min(max(1, startRow), self.gridLength)
+        endRow = max(min(self.gridLength, howFar + 1), 1)
+
+        targetArea = grid[startRow:endRow, fromCol:toCol]
+
+        return np.sum(targetArea == self.opponent_symbol)
+
+    def countOppsInFrontOfCar(self, grid, carPos, howFar, width=3):
         assert self.gridWidth % 2 == 0
         howFar = int(howFar)
         assert 0 <= howFar < self.gridLength
@@ -261,23 +281,24 @@ class Sense(object):
         fromCol = max(carPos - extraCols, 0)
         toCol = min(carPos + extraCols + 1, self.gridWidth)
 
-        targetArea = grid[startFrom:(howFar+1), fromCol:toCol]
+        targetArea = grid[startFrom:(howFar + 1), fromCol:toCol]
 
         return np.sum(targetArea == self.opponent_symbol)
 
-    def countOppsVarLen(self, grid, left_boolean, howFar, startFrom = 0):
+    def countOppsVarLen(self, grid, left_boolean, howFar, startFrom=0):
         assert self.gridWidth % 2 == 0
         howFar = int(howFar)
         assert 0 <= howFar < self.gridLength
         startFrom = int(startFrom)
         assert 0 <= startFrom <= howFar
 
-        halfGrid = int(self.gridWidth/2)
+        halfGrid = int(self.gridWidth / 2)
 
-        targetArea = grid[startFrom:(howFar+1), :halfGrid] if left_boolean else \
-            grid[startFrom:(howFar+1), halfGrid:]
+        targetArea = grid[startFrom:(howFar + 1), :halfGrid] if left_boolean else \
+            grid[startFrom:(howFar + 1), halfGrid:]
 
         return np.sum(targetArea == self.opponent_symbol)
+
 
 if __name__ == "__main__":
     seed = 16011984
@@ -353,6 +374,7 @@ if __name__ == "__main__":
         print prevGrid
         print sense.isRoadTurningLeft(prevGrid, Action.BREAK, newGrid)
         print newGrid
+
 
     def testCountOpponents():
         grid = sense.generateEmptyGrid()

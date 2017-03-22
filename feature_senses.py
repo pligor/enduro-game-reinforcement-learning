@@ -16,13 +16,14 @@ from enduro_features.count_opponents import CountOppsFarLeftFeature, CountOppsFa
     CountOppsNearLeftFeature, CountOppsNearRightFeature
 from enduro_features.gaussian_threat import GaussianThreatFeature, \
     GaussianThreatLeftFeature, GaussianThreatRightFeature
-from enduro_features.collission_detection import ShortSightedOppViewFeature, PenaltyIfCollissionFeature
+from enduro_features.collission_detection import ShortSightedOppViewFeature, PenaltyIfCollissionFeature, \
+    ReactToOppsDirectlyInFront
 
 
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
-    #combinations that kind of worked:
+    # combinations that kind of worked:
     #
     # CountOppsNearLeftFeature,
     # CountOppsNearRightFeature,
@@ -38,12 +39,12 @@ class FeatureSenses(object):
         self.nonLinearitiesEnabled = False
 
         self.feature_class_list = [
-            ShortSightedOppViewFeature,
-            GaussianThreatFeature,
-            #PenaltyIfCollissionFeature,
-            #GaussianThreatLeftFeature,
-            #GaussianThreatRightFeature,
-            #PenaltyIfCollissionFeature
+            # ShortSightedOppViewFeature,
+            # GaussianThreatFeature,
+            # PenaltyIfCollissionFeature,
+            # GaussianThreatLeftFeature,
+            # GaussianThreatRightFeature,
+            # PenaltyIfCollissionFeature
             # CountOppsNearLeftFeature,
             # CountOppsNearRightFeature,
             # CountOppsFarLeftFeature,
@@ -51,8 +52,8 @@ class FeatureSenses(object):
 
             # MoveFasterWhenLessThanAverageSpeed,
             # MoveSlowerWhenMoreThanAverageSpeed,
-            #MoveLeftWhenRight,
-            #MoveRightWhenLeft,
+            # MoveLeftWhenRight,
+            # MoveRightWhenLeft,
             # FirstOpponentLeftFeature,
             # FirstOpponentRightFeature,
             # SecondOpponentLeftFeature,
@@ -62,11 +63,12 @@ class FeatureSenses(object):
         ]
 
         self.plain_feature_class_list = [
-            #ConstantBiasPlainFeature,
+            ReactToOppsDirectlyInFront,
+            # ConstantBiasPlainFeature,
             RelativeSpeedJustFasterPlainFeature,
             BeingInTheCentreIsBetterPlainFeature,
-            #GoOrBrakePlainFeature,
-            #MovingFasterIsBetterPlainFeature,
+            # GoOrBrakePlainFeature,
+            # MovingFasterIsBetterPlainFeature,
         ]
 
         self.featureList = self.__generateFeatures()
