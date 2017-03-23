@@ -220,7 +220,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
 
     def onEndOfEpisode(self):
         # save theta vector
-        if np.any(self.total_reward < np.array(self.totalRewards)):
+        if np.all(self.total_reward > np.array(self.totalRewards)):
             np.save("enduro_theta_vector.npy", self.thetaVector)
             print "WE HAVE A NEW RECORD: {}".format(self.total_reward)
             sleep(5)
