@@ -16,7 +16,7 @@ from time import sleep
 
 if __name__ == "__main__":
     programId = 0
-    totalEpisodesCount = 1
+    totalEpisodesCount = 100
     seed = 16011984
     debugging = 0
     # if debugging == 0:
@@ -223,7 +223,7 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         if np.any(self.total_reward < np.array(self.totalRewards)):
             np.save("enduro_theta_vector.npy", self.thetaVector)
             print "WE HAVE A NEW RECORD: {}".format(self.total_reward)
-            sleep(5000)
+            sleep(5)
 
 
 if __name__ == "__main__":
