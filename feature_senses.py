@@ -27,6 +27,8 @@ from os.path import isfile
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
+    file_loaded_theta_vector = False
+
     # combinations that kind of worked:
     #
     # CountOppsNearLeftFeature,
@@ -87,7 +89,7 @@ class FeatureSenses(object):
 
         # self.initialTheta = Qcase.RANDOM
         filename = "enduro_theta_vector.npy"
-        if isfile(filename):
+        if isfile(filename) and self.file_loaded_theta_vector:
             self.initialTheta = self.getWeightsFromFileCallback(filename="enduro_theta_vector.npy", rng=rng)
         else:
             self.initialTheta = self.getChangeWeightsCallback(originalFeatureLen=originalFeatureLen,

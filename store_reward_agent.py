@@ -39,10 +39,12 @@ class StoreRewardAgent(object):
 class SaveRewardAgent(StoreRewardAgent):
     def __init__(self):
         super(SaveRewardAgent, self).__init__()
-        self.rewardsFilename = None
 
     def storeRewardInfo(self):
-        totalRewards, rewardStreams = self.getRewardInfo()
-        filename = self.rewardsFilename
-        np.savez(filename, totalRewards, rewardStreams)
-        return filename
+        if hasattr(self, "rewardsFilename"):
+            totalRewards, rewardStreams = self.getRewardInfo()
+            filename = self.rewardsFilename
+            np.savez(filename, totalRewards, rewardStreams)
+            return filename
+        else:
+            raise AssertionError

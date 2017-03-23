@@ -12,32 +12,33 @@ from q_linear_approx import Q_LinearApprox
 from os.path import isfile
 from action_selection import EgreedyActionSelection, SoftmaxActionSelection
 from keyboard_control import KeyboardControl
+from time import sleep
 
 if __name__ == "__main__":
     programId = 0
-    totalEpisodesCount = 100
+    totalEpisodesCount = 1
     seed = 16011984
-    debugging = 30
+    debugging = 0
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
 
 
-class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, SoftmaxActionSelection, KeyboardControl,
                          Agent):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
     def __init__(self, rng, computationalTemperature=None):
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
-        self.learning_rate_factor = 1e-1
+        self.learning_rate_factor = 1e-2
         self.withNoop = False
         self.keyboardControlEnabled = False
 
         self.epsilon = 0.05
 
         # small more like max, large more like random, i.e 5e-3
-        self.computationalTemperatureSpace = np.logspace(-4, -1, totalEpisodesCount)[
+        self.computationalTemperatureSpace = np.logspace(-2, -1, totalEpisodesCount)[
                                              ::-1] if computationalTemperature is None else \
             np.repeat(computationalTemperature, totalEpisodesCount)
 
@@ -46,8 +47,8 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
         self.debugging = debugging  # zero for actual run
         self.gamma = 0.9
 
-        self.middlefix = "linear_approx_take_one"
-        self.rewardsFilename = "QLinearApproxAgent_{:2d}_{}_{}_data".format(
+        self.middlefix = "linear_approx"
+        self.rewardsFilename = "QLinearApproxAgent_{:02d}_{}_{}_data".format(
             programId, self.middlefix, totalEpisodesCount
         )
 
@@ -219,7 +220,10 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Egreedy
 
     def onEndOfEpisode(self):
         # save theta vector
-        np.save("enduro_theta_vector.npy", self.thetaVector)
+        if np.any(self.total_reward < np.array(self.totalRewards)):
+            np.save("enduro_theta_vector.npy", self.thetaVector)
+            print "WE HAVE A NEW RECORD: {}".format(self.total_reward)
+            sleep(5000)
 
 
 if __name__ == "__main__":
@@ -233,7 +237,7 @@ if __name__ == "__main__":
         total_rewards, _ = agent.getRewardInfo()
         print total_rewards
 
-        # print agent.storeRewardInfo()
+        print agent.storeRewardInfo()
 
         return np.mean(total_rewards)
 
