@@ -15,8 +15,8 @@ from keyboard_control import KeyboardControl
 from time import sleep
 
 if __name__ == "__main__":
-    programId = 0
-    totalEpisodesCount = 100
+    programId = 1
+    totalEpisodesCount = 500
     seed = 16011984
     debugging = 0
     # if debugging == 0:
@@ -223,7 +223,9 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
         if np.all(self.total_reward > np.array(self.totalRewards)):
             np.save("enduro_theta_vector.npy", self.thetaVector)
             print "WE HAVE A NEW RECORD: {}".format(self.total_reward)
-            sleep(5)
+            import os
+            os.system('play --no-show-progress --null --channels 1 synth {} sine {}'.format(0.5, 800))
+            sleep(10)
 
 
 if __name__ == "__main__":

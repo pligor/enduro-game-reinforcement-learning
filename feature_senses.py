@@ -27,7 +27,7 @@ from os.path import isfile
 class FeatureSenses(object):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
-    file_loaded_theta_vector = False
+    file_loaded_theta_vector = True
 
     # combinations that kind of worked:
     #
