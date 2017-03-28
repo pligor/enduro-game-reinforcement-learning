@@ -16,26 +16,29 @@ from time import sleep
 
 if __name__ == "__main__":
     programId = 1
-    totalEpisodesCount = 500
+    totalEpisodesCount = 1
     seed = 16011984
-    debugging = 0
+    debugging = 100
+    comp_temp = None  #5e-2
+    learnEnabled = True
     # if debugging == 0:
     # from skopt.space.space import Integer, Real
     # from skopt import gp_minimize
 
 
-class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, SoftmaxActionSelection, KeyboardControl,
+class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, EgreedyActionSelection, KeyboardControl,
                          Agent):
     """['ACCELERATE', 'RIGHT', 'LEFT', 'BRAKE', 'NOOP']"""
 
     def __init__(self, rng, computationalTemperature=None):
+        #sleep(10)
         self.lr_p_param = 0.501
         assert 0.5 < self.lr_p_param <= 1
         self.learning_rate_factor = 1e-2
         self.withNoop = False
         self.keyboardControlEnabled = False
 
-        self.epsilon = 0.05
+        self.epsilon = 0.  #0.05
 
         # small more like max, large more like random, i.e 5e-3
         self.computationalTemperatureSpace = np.logspace(-2, -1, totalEpisodesCount)[
@@ -128,6 +131,10 @@ class QLinearApproxAgent(FeatureSenses, SaveRewardAgent, Q_LinearApprox, Softmax
 
         if hasattr(self, "computationalTemperature"):
             print "computational temperature: {}".format(self.computationalTemperature)
+
+        #sleep(5)
+        cv2.imshow("Enduro", self._image)
+        cv2.waitKey(10000)
 
     def act(self):
         """ Implements the decision making process for selecting
@@ -234,7 +241,7 @@ if __name__ == "__main__":
 
         agent = QLinearApproxAgent(rng=randomGenerator, computationalTemperature=computationalTemperature)
 
-        agent.run(learn=True, episodes=totalEpisodesCount, draw=True)
+        agent.run(learn=learnEnabled, episodes=totalEpisodesCount, draw=True)
 
         total_rewards, _ = agent.getRewardInfo()
         print total_rewards
@@ -245,6 +252,6 @@ if __name__ == "__main__":
 
 
     # meanTotalRewards = mymain(bestComputationTemperature)
-    meanTotalRewards = mymain()  # computationalTemperature=1e-4
+    meanTotalRewards = mymain(computationalTemperature=comp_temp)  # computationalTemperature=1e-4
     print "meanTotalRewards"
     print meanTotalRewards
